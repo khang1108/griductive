@@ -1,0 +1,336 @@
+{
+  "puzzle_id": "dragon_5x5_01",
+  "name": "5×5 Scalability Masterpiece",
+  "size": 5,
+  "difficulty": "expert",
+  "initial_revealed": [
+    "C3"
+  ],
+  "grid": [
+    {
+      "cell": "A1",
+      "name": "Ada",
+      "profession": "Architect",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "SAME",
+        "left": "A1",
+        "right": "B1"
+      }
+    },
+    {
+      "cell": "B1",
+      "name": "Binh",
+      "profession": "Botanist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "B1",
+        "right": "C1"
+      }
+    },
+    {
+      "cell": "C1",
+      "name": "Chi",
+      "profession": "Chef",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_MOST",
+        "k": 2,
+        "region": {
+          "type": "ROW",
+          "row": 0
+        }
+      }
+    },
+    {
+      "cell": "D1",
+      "name": "Duy",
+      "profession": "Doctor",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "C2"
+        }
+      }
+    },
+    {
+      "cell": "E1",
+      "name": "Emi",
+      "profession": "Engineer",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_LEAST",
+        "k": 3,
+        "region": {
+          "type": "ROW",
+          "row": 1
+        }
+      }
+    },
+    {
+      "cell": "A2",
+      "name": "Finn",
+      "profession": "Forensic Artist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 4,
+        "region": {
+          "type": "COLUMN",
+          "col": 0
+        }
+      }
+    },
+    {
+      "cell": "B2",
+      "name": "Gia",
+      "profession": "Geologist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "SAME",
+        "left": "B4",
+        "right": "A4"
+      }
+    },
+    {
+      "cell": "C2",
+      "name": "Hana",
+      "profession": "Historian",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "B4",
+        "right": "C4"
+      }
+    },
+    {
+      "cell": "D2",
+      "name": "Ivy",
+      "profession": "Illustrator",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "SAME",
+        "left": "D4",
+        "right": "A4"
+      }
+    },
+    {
+      "cell": "E2",
+      "name": "Jae",
+      "profession": "Journalist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "AT_MOST",
+        "k": 3,
+        "region": {
+          "type": "ROW",
+          "row": 3
+        }
+      }
+    },
+    {
+      "cell": "A3",
+      "name": "Khan",
+      "profession": "Keeper",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_LEAST",
+        "k": 4,
+        "region": {
+          "type": "COLUMN",
+          "col": 0
+        }
+      }
+    },
+    {
+      "cell": "B3",
+      "name": "Linh",
+      "profession": "Librarian",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "SAME",
+        "left": "A5",
+        "right": "C5"
+      }
+    },
+    {
+      "cell": "C3",
+      "name": "Minh",
+      "profession": "Musician",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "type": "ROW",
+          "row": 2
+        }
+      }
+    },
+    {
+      "cell": "D3",
+      "name": "Nora",
+      "profession": "Nurse",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "C5",
+        "right": "D5"
+      }
+    },
+    {
+      "cell": "E3",
+      "name": "Owen",
+      "profession": "Oceanographer",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 3,
+        "region": {
+          "type": "ROW",
+          "row": 4
+        }
+      }
+    },
+    {
+      "cell": "A4",
+      "name": "Phuc",
+      "profession": "Pilot",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 4,
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "A1",
+            "C1",
+            "C2",
+            "D2",
+            "A4",
+            "C4",
+            "E5"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "B4",
+      "name": "Quynh",
+      "profession": "Researcher",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "AT_MOST",
+        "k": 3,
+        "region": {
+          "type": "ROW",
+          "row": 4
+        }
+      }
+    },
+    {
+      "cell": "C4",
+      "name": "Rin",
+      "profession": "Scientist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "B5",
+        "right": "E5"
+      }
+    },
+    {
+      "cell": "D4",
+      "name": "Son",
+      "profession": "Teacher",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "FACT",
+        "target": "E5",
+        "status": "CRIMINAL"
+      }
+    },
+    {
+      "cell": "E4",
+      "name": "Trang",
+      "profession": "Urbanist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 4,
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "C4"
+        }
+      }
+    },
+    {
+      "cell": "A5",
+      "name": "Uma",
+      "profession": "Violinist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "SAME",
+        "left": "A5",
+        "right": "A1"
+      }
+    },
+    {
+      "cell": "B5",
+      "name": "Vy",
+      "profession": "Writer",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "B5",
+        "right": "E5"
+      }
+    },
+    {
+      "cell": "C5",
+      "name": "Will",
+      "profession": "Xylophonist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 3,
+        "region": {
+          "type": "COLUMN",
+          "col": 2
+        }
+      }
+    },
+    {
+      "cell": "D5",
+      "name": "Xuan",
+      "profession": "Yacht Captain",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_MOST",
+        "k": 2,
+        "region": {
+          "type": "COLUMN",
+          "col": 3
+        }
+      }
+    },
+    {
+      "cell": "E5",
+      "name": "Yen",
+      "profession": "Zoologist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "AT_LEAST",
+        "k": 2,
+        "region": {
+          "type": "COLUMN",
+          "col": 4
+        }
+      }
+    }
+  ]
+}

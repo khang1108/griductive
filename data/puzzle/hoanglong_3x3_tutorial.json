@@ -1,0 +1,122 @@
+{
+  "puzzle_id": "hoanglong_3x3_tutorial",
+  "name": "3×3 Detective Academy",
+  "size": 3,
+  "difficulty": "easy",
+  "initial_revealed": [
+    "A1"
+  ],
+  "grid": [
+    {
+      "cell": "A1",
+      "name": "Ada",
+      "profession": "Architect",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "FACT",
+        "target": "B1",
+        "status": "INNOCENT"
+      }
+    },
+    {
+      "cell": "B1",
+      "name": "Binh",
+      "profession": "Botanist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "SAME",
+        "left": "B1",
+        "right": "C1"
+      }
+    },
+    {
+      "cell": "C1",
+      "name": "Chi",
+      "profession": "Chef",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "C1",
+        "right": "A2"
+      }
+    },
+    {
+      "cell": "A2",
+      "name": "Duy",
+      "profession": "Doctor",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "FACT",
+        "target": "B2",
+        "status": "INNOCENT"
+      }
+    },
+    {
+      "cell": "B2",
+      "name": "Emi",
+      "profession": "Engineer",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "type": "ROW",
+          "row": 1
+        }
+      }
+    },
+    {
+      "cell": "C2",
+      "name": "Finn",
+      "profession": "Forensic Artist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "type": "COLUMN",
+          "col": 0
+        }
+      }
+    },
+    {
+      "cell": "A3",
+      "name": "Gia",
+      "profession": "Geologist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "A3",
+        "right": "B3"
+      }
+    },
+    {
+      "cell": "B3",
+      "name": "Hana",
+      "profession": "Historian",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "AT_MOST",
+        "k": 1,
+        "region": {
+          "type": "ROW",
+          "row": 2
+        }
+      }
+    },
+    {
+      "cell": "C3",
+      "name": "Ivy",
+      "profession": "Illustrator",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_LEAST",
+        "k": 1,
+        "region": {
+          "type": "ROW",
+          "row": 0
+        }
+      }
+    }
+  ]
+}

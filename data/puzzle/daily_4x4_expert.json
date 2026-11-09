@@ -1,0 +1,228 @@
+{
+  "puzzle_id": "daily_4x4_expert",
+  "name": "4×4 Scotland Yard Expert",
+  "size": 4,
+  "difficulty": "expert",
+  "initial_revealed": [
+    "C2",
+    "B3"
+  ],
+  "grid": [
+    {
+      "cell": "A1",
+      "name": "Ivy",
+      "profession": "Illustrator",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "AT_LEAST",
+        "k": 1,
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "B3"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "B1",
+      "name": "Finn",
+      "profession": "Forensic Artist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "SAME",
+        "left": "B1",
+        "right": "B4"
+      }
+    },
+    {
+      "cell": "C1",
+      "name": "Hana",
+      "profession": "Historian",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "AT_LEAST",
+        "k": 1,
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "D3"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "D1",
+      "name": "Vy",
+      "profession": "Writer",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "D1",
+        "right": "D2"
+      }
+    },
+    {
+      "cell": "A2",
+      "name": "Trang",
+      "profession": "Urbanist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_MOST",
+        "k": 0,
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "D1"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "B2",
+      "name": "Chi",
+      "profession": "Chef",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "PARITY",
+        "parity": "EVEN",
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "D4"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "C2",
+      "name": "Emi",
+      "profession": "Engineer",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "PARITY",
+        "parity": "EVEN",
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "C4"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "D2",
+      "name": "Son",
+      "profession": "Teacher",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "D2",
+        "right": "B2"
+      }
+    },
+    {
+      "cell": "A3",
+      "name": "Uma",
+      "profession": "Violinist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "C1"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "B3",
+      "name": "Nora",
+      "profession": "Nurse",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "B3",
+        "right": "A4"
+      }
+    },
+    {
+      "cell": "C3",
+      "name": "Duy",
+      "profession": "Doctor",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "FACT",
+        "target": "A2",
+        "status": "INNOCENT"
+      }
+    },
+    {
+      "cell": "D3",
+      "name": "Xuan",
+      "profession": "Yacht Captain",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "FACT",
+        "target": "A1",
+        "status": "CRIMINAL"
+      }
+    },
+    {
+      "cell": "A4",
+      "name": "Jae",
+      "profession": "Journalist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_LEAST",
+        "k": 1,
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "B1"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "B4",
+      "name": "Khan",
+      "profession": "Keeper",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "SAME",
+        "left": "B4",
+        "right": "A3"
+      }
+    },
+    {
+      "cell": "C4",
+      "name": "Gia",
+      "profession": "Geologist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "C3"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "D4",
+      "name": "Rin",
+      "profession": "Scientist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "FACT",
+        "target": "C2",
+        "status": "CRIMINAL"
+      }
+    }
+  ]
+}

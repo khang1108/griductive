@@ -1,0 +1,131 @@
+{
+  "puzzle_id": "daily_3x3_hard",
+  "name": "3×3 Knotwise Daily (Hard)",
+  "size": 3,
+  "difficulty": "hard",
+  "initial_revealed": [
+    "B3",
+    "C2"
+  ],
+  "grid": [
+    {
+      "cell": "A1",
+      "name": "Emi",
+      "profession": "Engineer",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "A1",
+        "right": "B2"
+      }
+    },
+    {
+      "cell": "B1",
+      "name": "Jae",
+      "profession": "Journalist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "C1"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "C1",
+      "name": "Minh",
+      "profession": "Musician",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "FACT",
+        "target": "B3",
+        "status": "INNOCENT"
+      }
+    },
+    {
+      "cell": "A2",
+      "name": "Phuc",
+      "profession": "Pilot",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "PARITY",
+        "parity": "EVEN",
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "C3"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "B2",
+      "name": "Will",
+      "profession": "Xylophonist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "AT_MOST",
+        "k": 0,
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "B1"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "C2",
+      "name": "Finn",
+      "profession": "Forensic Artist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "FACT",
+        "target": "A3",
+        "status": "CRIMINAL"
+      }
+    },
+    {
+      "cell": "A3",
+      "name": "Gia",
+      "profession": "Geologist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "A3",
+        "right": "A2"
+      }
+    },
+    {
+      "cell": "B3",
+      "name": "Yen",
+      "profession": "Zoologist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "SAME",
+        "left": "B3",
+        "right": "A1"
+      }
+    },
+    {
+      "cell": "C3",
+      "name": "Nora",
+      "profession": "Nurse",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_LEAST",
+        "k": 1,
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "C2"
+          ]
+        }
+      }
+    }
+  ]
+}

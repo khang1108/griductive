@@ -1,0 +1,141 @@
+{
+  "puzzle_id": "dragon_3x3_02",
+  "name": "3×3 Regional Deduction",
+  "size": 3,
+  "difficulty": "hard",
+  "initial_revealed": [
+    "B2"
+  ],
+  "grid": [
+    {
+      "cell": "A1",
+      "name": "Ada",
+      "profession": "Architect",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "AT_MOST",
+        "k": 1,
+        "region": {
+          "type": "ROW",
+          "row": 0
+        }
+      }
+    },
+    {
+      "cell": "B1",
+      "name": "Binh",
+      "profession": "Botanist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "type": "COLUMN",
+          "col": 1
+        }
+      }
+    },
+    {
+      "cell": "C1",
+      "name": "Chi",
+      "profession": "Chef",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_LEAST",
+        "k": 1,
+        "region": {
+          "type": "COLUMN",
+          "col": 2
+        }
+      }
+    },
+    {
+      "cell": "A2",
+      "name": "Duy",
+      "profession": "Doctor",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_LEAST",
+        "k": 2,
+        "region": {
+          "type": "COLUMN",
+          "col": 0
+        }
+      }
+    },
+    {
+      "cell": "B2",
+      "name": "Emi",
+      "profession": "Engineer",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "type": "ROW",
+          "row": 1
+        }
+      }
+    },
+    {
+      "cell": "C2",
+      "name": "Finn",
+      "profession": "Forensic Artist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 3,
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "B2"
+        }
+      }
+    },
+    {
+      "cell": "A3",
+      "name": "Gia",
+      "profession": "Geologist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "A3",
+            "B3",
+            "C3"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "B3",
+      "name": "Hana",
+      "profession": "Historian",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_MOST",
+        "k": 1,
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "C3"
+        }
+      }
+    },
+    {
+      "cell": "C3",
+      "name": "Ivy",
+      "profession": "Illustrator",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "type": "ROW",
+          "row": 2
+        }
+      }
+    }
+  ]
+}

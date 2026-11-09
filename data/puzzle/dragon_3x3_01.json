@@ -1,0 +1,110 @@
+{
+  "puzzle_id": "dragon_3x3_01",
+  "name": "3×3 Sanity Grid (Dragon)",
+  "size": 3,
+  "difficulty": "normal",
+  "initial_revealed": [
+    "B2"
+  ],
+  "grid": [
+    {
+      "cell": "A1",
+      "name": "Ada",
+      "profession": "Architect",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "SAME",
+        "left": "A1",
+        "right": "B1"
+      }
+    },
+    {
+      "cell": "B1",
+      "name": "Binh",
+      "profession": "Botanist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "B1",
+        "right": "C1"
+      }
+    },
+    {
+      "cell": "C1",
+      "name": "Chi",
+      "profession": "Chef",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "SAME",
+        "left": "C1",
+        "right": "A2"
+      }
+    },
+    {
+      "cell": "A2",
+      "name": "Duy",
+      "profession": "Doctor",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "SAME",
+        "left": "A2",
+        "right": "B3"
+      }
+    },
+    {
+      "cell": "B2",
+      "name": "Emi",
+      "profession": "Engineer",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "FACT",
+        "target": "A1",
+        "status": "CRIMINAL"
+      }
+    },
+    {
+      "cell": "C2",
+      "name": "Finn",
+      "profession": "Forensic Artist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "C2",
+        "right": "A3"
+      }
+    },
+    {
+      "cell": "A3",
+      "name": "Gia",
+      "profession": "Geologist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "FACT",
+        "target": "B2",
+        "status": "CRIMINAL"
+      }
+    },
+    {
+      "cell": "B3",
+      "name": "Hana",
+      "profession": "Historian",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "B3",
+        "right": "C3"
+      }
+    },
+    {
+      "cell": "C3",
+      "name": "Ivy",
+      "profession": "Illustrator",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "SAME",
+        "left": "C3",
+        "right": "C2"
+      }
+    }
+  ]
+}
