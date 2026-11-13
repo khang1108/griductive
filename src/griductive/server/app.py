@@ -10,14 +10,15 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from griductive.domain.models import CellId, Status
-from griductive.engine.game_engine import GameEngine
+from griductive.engine.game_engine import GameEngine, VerifiedVerdict
 from griductive.engine.puzzle_db import (
     list_puzzles_from_sqlite,
     load_puzzle_from_sqlite,
     seed_database_from_json_dir,
 )
+from griductive.logic.agent import InconsistentKnowledgeBaseError, LogicAgent
 from griductive.server.avatar_cache import get_avatar_png
-from griductive.server.serializers import serialize_game_state
+from griductive.server.serializers import format_clue, serialize_game_state
 
 app = FastAPI(title="Griductive Web API", version="1.0.0")
 
@@ -176,18 +177,58 @@ def get_hint() -> dict[str, Any]:
 
 @app.post("/api/auto-solve")
 def auto_solve() -> dict[str, Any]:
-    # Extension point: connect your group's DPLL SAT Solver & Deductive Logic Agent here
     assert session.engine is not None
+    agent = LogicAgent()
+    trace: list[str] = []
+
+    while not session.engine.is_solved():
+        state = session.engine.get_public_state()
+        try:
+            hint = agent.suggest_next(state)
+        except InconsistentKnowledgeBaseError as error:
+            raise HTTPException(status_code=409, detail=str(error)) from error
+
+        if hint is None:
+            break
+
+        reveal = session.engine.commit_verified_verdict(
+            VerifiedVerdict(
+                session_id=state.session_id,
+                revision=state.revision,
+                cell=hint.cell,
+                status=hint.forced_status,
+            )
+        )
+        trace.append(
+            f"Step {len(trace) + 1}: {hint.reason} "
+            f"Revealed: {format_clue(reveal.revealed_clue)}"
+        )
+
+    is_solved = session.engine.is_solved()
+    if is_solved:
+        message = f"Auto-solve completed: {len(trace)} entailed verdict(s) revealed."
+        banner_type = "success"
+        status = "SOLVED"
+    else:
+        state = session.engine.get_public_state()
+        message = (
+            "Auto-solve paused: no forced verdict is currently provable "
+            f"({len(state.known_statuses())}/{len(state.cells)} cards solved)."
+        )
+        banner_type = "info"
+        status = "STALLED"
+
     state_data = serialize_game_state(
         session.engine,
         session.current_stage,
         session.available_stages,
-        banner_message="⚡ AI Auto-Solve: Extension point reserved for your group's DPLL SAT Solver.",
-        banner_type="info",
+        banner_message=message,
+        banner_type=banner_type,
         stage_catalog=session.stage_catalog,
     )
-    state_data["status"] = "RESERVED_FOR_GROUP"
-    state_data["message"] = "Implement your DPLL and Logic Agent to automate case solving."
+    state_data["status"] = status
+    state_data["steps_taken"] = len(trace)
+    state_data["trace"] = trace
     return state_data
 
 
