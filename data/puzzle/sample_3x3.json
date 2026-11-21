@@ -75,8 +75,8 @@
         "type": "PARITY",
         "parity": "EVEN",
         "region": {
-          "type": "ROW",
-          "row": 1
+          "type": "COLUMN",
+          "col": 1
         }
       }
     },
@@ -86,9 +86,12 @@
       "profession": "Geologist",
       "status": "INNOCENT",
       "clue": {
-        "type": "FACT",
-        "target": "B3",
-        "status": "INNOCENT"
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "type": "COLUMN",
+          "col": 2
+        }
       }
     },
     {

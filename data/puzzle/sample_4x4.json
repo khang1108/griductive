@@ -70,8 +70,8 @@
       "profession": "Forensic Artist",
       "status": "INNOCENT",
       "clue": {
-        "type": "AT_LEAST",
-        "k": 2,
+        "type": "PARITY",
+        "parity": "EVEN",
         "region": {
           "type": "ROW",
           "row": 1
@@ -84,8 +84,8 @@
       "profession": "Geologist",
       "status": "CRIMINAL",
       "clue": {
-        "type": "PARITY",
-        "parity": "EVEN",
+        "type": "EXACTLY",
+        "k": 2,
         "region": {
           "type": "ROW",
           "row": 1
@@ -181,9 +181,12 @@
       "profession": "Oceanographer",
       "status": "INNOCENT",
       "clue": {
-        "type": "FACT",
-        "target": "D4",
-        "status": "INNOCENT"
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "type": "COLUMN",
+          "col": 2
+        }
       }
     },
     {
@@ -195,8 +198,8 @@
         "type": "EXACTLY",
         "k": 2,
         "region": {
-          "type": "ROW",
-          "row": 3
+          "type": "COLUMN",
+          "col": 0
         }
       }
     }
