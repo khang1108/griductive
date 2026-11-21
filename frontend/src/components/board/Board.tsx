@@ -7,6 +7,7 @@ interface BoardProps {
   cells: CellData[];
   highlightedCoords: string[];
   darkMode: boolean;
+  actionsDisabled: boolean;
   onCardClick: (cell: CellData) => void;
   onClueClick: (cell: CellData) => void;
 }
@@ -16,6 +17,7 @@ export const Board: React.FC<BoardProps> = ({
   cells,
   highlightedCoords,
   darkMode,
+  actionsDisabled,
   onCardClick,
   onClueClick,
 }) => {
@@ -67,6 +69,7 @@ export const Board: React.FC<BoardProps> = ({
                     cell={cell}
                     isHighlighted={isHigh}
                     darkMode={darkMode}
+                    actionsDisabled={actionsDisabled}
                     onClick={onCardClick}
                     onClueClick={onClueClick}
                   />

@@ -5,6 +5,7 @@ interface CardTileProps {
   cell: CellData;
   isHighlighted: boolean;
   darkMode: boolean;
+  actionsDisabled: boolean;
   onClick: (cell: CellData) => void;
   onClueClick: (cell: CellData) => void;
 }
@@ -13,6 +14,7 @@ export const CardTile: React.FC<CardTileProps> = ({
   cell,
   isHighlighted,
   darkMode,
+  actionsDisabled,
   onClick,
   onClueClick,
 }) => {
@@ -22,6 +24,7 @@ export const CardTile: React.FC<CardTileProps> = ({
 
   const handleClick = () => {
     if (!isRevealed) {
+      if (actionsDisabled) return;
       onClick(cell);
     } else if (cell.clue_text) {
       onClueClick(cell);
@@ -52,10 +55,17 @@ export const CardTile: React.FC<CardTileProps> = ({
       : " ring-2 ring-amber-500 bg-[#FEF3C7] shadow-[0_0_20px_rgba(217,119,6,0.4)] border-amber-500";
   }
 
+  const manualVerdictDisabled = actionsDisabled && !isRevealed;
+
   return (
     <div
       onClick={handleClick}
-      className={`group relative w-[146px] h-[174px] rounded-xl border p-2.5 flex flex-col items-center justify-between cursor-pointer select-none transition-all duration-300 ease-out transform hover:-translate-y-1 hover:shadow-lg active:scale-95 ${cardSurfaceClass}`}
+      aria-disabled={manualVerdictDisabled}
+      className={`group relative w-[146px] h-[174px] rounded-xl border p-2.5 flex flex-col items-center justify-between select-none transition-all duration-300 ease-out transform ${
+        manualVerdictDisabled
+          ? "cursor-not-allowed opacity-60"
+          : "cursor-pointer hover:-translate-y-1 hover:shadow-lg active:scale-95"
+      } ${cardSurfaceClass}`}
     >
       {/* Top row: Coordinate + Status Pill */}
       <div className="w-full flex items-center justify-between text-[11px] font-mono leading-none">
