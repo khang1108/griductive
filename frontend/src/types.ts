@@ -31,6 +31,7 @@ export interface StageInfo {
 }
 
 export interface GameState {
+  session_id: string;
   size: number;
   current_stage: string;
   available_stages: string[];
@@ -46,6 +47,72 @@ export interface GameState {
   active_clues: ActiveClue[];
   verdict_success?: boolean;
   verdict_message?: string;
+}
+
+export type LogicOutcome =
+  | "IN_PROGRESS"
+  | "SOLVED"
+  | "STUCK_NO_FORCIBLE_MOVE"
+  | "INCONSISTENT"
+  | "ENGINE_REJECTED"
+  | "TIMEOUT";
+
+export type HintOutcome =
+  | "AVAILABLE"
+  | "SOLVED"
+  | "STUCK_NO_FORCIBLE_MOVE"
+  | "INCONSISTENT";
+
+export type VerdictStatus = "CRIMINAL" | "INNOCENT";
+
+export interface SolverStatsSnapshot {
+  decisions: number;
+  propagations: number;
+  backtracks: number;
+  runtime_ms: number;
+}
+
+export interface TraceStep {
+  step: number;
+  active_clue_ids: string[];
+  sat_queries: number;
+  verdict_cell: string;
+  verdict_status: VerdictStatus;
+  new_clue_id: string | null;
+  primary_vars_count: number;
+  aux_vars_count: number;
+  clause_count: number;
+  stats: SolverStatsSnapshot;
+}
+
+export interface RunMetrics {
+  sat_queries: number;
+  decisions: number;
+  propagations: number;
+  backtracks: number;
+  solver_runtime_ms: number;
+  wall_time_ms: number;
+  max_primary_vars: number;
+  max_aux_vars: number;
+  max_clauses: number;
+  deduction_steps: number;
+}
+
+export interface HintResponse {
+  hint: string;
+  cell: string | null;
+  status: VerdictStatus | null;
+  active_clue_ids: string[];
+  session_id: string;
+  revision: number;
+  outcome: HintOutcome;
+}
+
+export interface StepResponse {
+  state: GameState;
+  outcome: LogicOutcome;
+  step: TraceStep | null;
+  metrics: RunMetrics;
 }
 
 export interface LogEntry {

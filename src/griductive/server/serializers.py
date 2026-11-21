@@ -23,6 +23,7 @@ from griductive.domain.regions import (
     resolve_region,
 )
 from griductive.engine.game_engine import GameEngine
+from griductive.logic.agent.models import DeductionResult, DeductionStepTrace
 
 
 def format_region(region: RegionSpec) -> str:
@@ -136,6 +137,7 @@ def serialize_game_state(
     total_cells = len(state.cells)
 
     return {
+        "session_id": engine.session_id,
         "size": engine.size,
         "current_stage": current_stage,
         "available_stages": available_stages,
@@ -149,4 +151,43 @@ def serialize_game_state(
         "banner_type": banner_type,
         "cells": cells_data,
         "active_clues": active_clues,
+    }
+
+
+def serialize_trace_step(
+    trace: DeductionStepTrace,
+    *,
+    step_number: int | None = None,
+) -> dict[str, Any]:
+    return {
+        "step": trace.step if step_number is None else step_number,
+        "active_clue_ids": list(trace.active_clue_ids),
+        "sat_queries": trace.sat_queries,
+        "verdict_cell": trace.verdict_cell.to_label(),
+        "verdict_status": trace.verdict_status.value,
+        "new_clue_id": trace.new_clue_id,
+        "primary_vars_count": trace.primary_vars_count,
+        "aux_vars_count": trace.aux_vars_count,
+        "clause_count": trace.clause_count,
+        "stats": {
+            "decisions": trace.stats.decisions,
+            "propagations": trace.stats.propagations,
+            "backtracks": trace.stats.backtracks,
+            "runtime_ms": trace.stats.runtime_ms,
+        },
+    }
+
+
+def serialize_run_metrics(result: DeductionResult) -> dict[str, int | float]:
+    return {
+        "sat_queries": result.total_sat_queries,
+        "decisions": result.total_stats.decisions,
+        "propagations": result.total_stats.propagations,
+        "backtracks": result.total_stats.backtracks,
+        "solver_runtime_ms": result.total_stats.runtime_ms,
+        "wall_time_ms": result.total_wall_time_ms,
+        "max_primary_vars": result.max_primary_vars,
+        "max_aux_vars": result.max_aux_vars,
+        "max_clauses": result.max_clauses,
+        "deduction_steps": len(result.steps),
     }

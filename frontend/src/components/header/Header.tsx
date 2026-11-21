@@ -7,6 +7,7 @@ import {
   Sun,
   Moon,
   ChevronDown,
+  Square,
 } from "lucide-react";
 import type { StageInfo } from "../../types";
 
@@ -19,10 +20,14 @@ interface HeaderProps {
   elapsedSeconds: number;
   darkMode: boolean;
   onStageChange: (stage: string) => void;
-  onPause: () => void;
+  onPause: () => void | Promise<void>;
   onRestart: () => void;
   onHint: () => void;
   onAutoSolve: () => void;
+  onStopAutoSolve: () => void | Promise<void>;
+  isAutoSolving: boolean;
+  isStopping: boolean;
+  actionsDisabled: boolean;
   onToggleTheme: () => void;
 }
 
@@ -39,8 +44,13 @@ export const Header: React.FC<HeaderProps> = ({
   onRestart,
   onHint,
   onAutoSolve,
+  onStopAutoSolve,
+  isAutoSolving,
+  isStopping,
+  actionsDisabled,
   onToggleTheme,
 }) => {
+  const pauseDisabled = isStopping || (actionsDisabled && !isAutoSolving);
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60)
       .toString()
@@ -112,11 +122,12 @@ export const Header: React.FC<HeaderProps> = ({
           <select
             value={currentStage}
             onChange={(e) => onStageChange(e.target.value)}
+            disabled={actionsDisabled}
             className={`appearance-none pl-3 pr-8 py-1.5 text-xs font-semibold rounded-lg border cursor-pointer outline-none transition-colors ${
               darkMode
                 ? "bg-[#241E1A] border-[#3A312B] text-[#E2D7C8] hover:border-[#55483F]"
                 : "bg-[#FFFBF5] border-[#DDD0BF] text-[#292524] hover:border-[#BDB09E]"
-            }`}
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {groups.map((grp) => (
               <optgroup
@@ -161,12 +172,13 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Pause Button */}
         <button
           onClick={onPause}
+          disabled={pauseDisabled}
           title="Pause game"
           className={`p-2 rounded-lg border transition-all active:scale-95 ${
             darkMode
               ? "bg-[#241E1A] border-[#3A312B] hover:bg-[#2E2722] text-[#E2D7C8]"
               : "bg-[#FFFBF5] border-[#DDD0BF] hover:bg-[#F8EFE4] text-[#292524]"
-          }`}
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           <Pause className="w-3.5 h-3.5 fill-current" />
         </button>
@@ -176,11 +188,12 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Restart */}
         <button
           onClick={onRestart}
+          disabled={actionsDisabled}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all active:scale-95 ${
             darkMode
               ? "bg-[#241E1A] border-[#3A312B] hover:bg-[#2E2722] text-[#E2D7C8]"
               : "bg-[#FFFBF5] border-[#DDD0BF] hover:bg-[#F8EFE4] text-[#292524]"
-          }`}
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>Restart</span>
@@ -189,11 +202,12 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Hint */}
         <button
           onClick={onHint}
+          disabled={actionsDisabled}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all active:scale-95 ${
             darkMode
               ? "bg-[#241E1A] border-[#3A312B] hover:bg-[#2E2722] text-[#E2D7C8]"
               : "bg-[#FFFBF5] border-[#DDD0BF] hover:bg-[#F8EFE4] text-[#292524]"
-          }`}
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
           <span>Hint</span>
@@ -201,15 +215,32 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Auto Solve */}
         <button
-          onClick={onAutoSolve}
+          onClick={() => {
+            if (isAutoSolving) void onStopAutoSolve();
+            else onAutoSolve();
+          }}
+          disabled={isStopping || (!isAutoSolving && actionsDisabled)}
+          aria-label={
+            isStopping
+              ? "Stopping auto solve"
+              : isAutoSolving
+              ? "Stop auto solve"
+              : "Start auto solve"
+          }
           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all active:scale-95 ${
             darkMode
               ? "bg-[#241E1A] border-[#3A312B] hover:bg-[#2E2722] text-[#E2D7C8]"
               : "bg-[#FFFBF5] border-[#DDD0BF] hover:bg-[#F8EFE4] text-[#292524]"
-          }`}
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
-          <Zap className="w-3.5 h-3.5 text-amber-400" />
-          <span>Auto Solve</span>
+          {isAutoSolving ? (
+            <Square className="w-3 h-3 fill-current text-red-400" />
+          ) : (
+            <Zap className="w-3.5 h-3.5 text-amber-400" />
+          )}
+          <span>
+            {isStopping ? "Stopping…" : isAutoSolving ? "Stop" : "Auto Solve"}
+          </span>
         </button>
 
         {/* Theme Toggle */}
