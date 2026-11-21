@@ -479,3 +479,51 @@ def test_logic_agent_default_init_with_real_cnf_encoder() -> None:
     # 3. Test check_uniqueness with real CNFEncoder
     is_unique = agent.check_uniqueness(real_puzzle)
     assert is_unique is True
+
+
+def test_models_type_hints_and_partial_board_witness_cache() -> None:
+    """Verify CompleteCluesPublicCell type hints resolve and partial-board witness cache fires."""
+    import typing
+
+    from griductive.logic.agent import CompleteCluesPublicCell
+    from griductive.logic.agent.logic_agent import _ReferenceDPLLSolver
+    from griductive.logic.cnf import CNFEncoder
+
+    hints = typing.get_type_hints(CompleteCluesPublicCell)
+    assert hints["character"] is Character
+
+    # 3x3 partial board where only Row 0 is constrained (Rows 1 and 2 are absent from KB clauses)
+    cells_3x3 = BoardLayout(3).all_cells()
+    chars = tuple(
+        Character(cell_id=c, name=f"P_{c.to_label()}", profession="Clerk")
+        for c in cells_3x3
+    )
+    a1, b1, c1 = cells_3x3[0], cells_3x3[1], cells_3x3[2]
+    partial_state = PublicState(
+        session_id="partial_3x3",
+        revision=0,
+        size=3,
+        cells=(
+            PublicCell(chars[0], Status.INNOCENT, ExactlyClue(clue_id="r0", owner=a1, region=RowRegion(0), k=1)),
+            *(PublicCell(ch, None, None) for ch in chars[1:]),
+        ),
+    )
+
+    class _CountingSolver(_ReferenceDPLLSolver):
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def solve(self, clauses: Sequence[Sequence[int]], assumptions: Sequence[int] = ()):
+            self.calls += 1
+            return super().solve(clauses, assumptions)
+
+    plain_solver = _CountingSolver()
+    cached_solver = _CountingSolver()
+
+    res_plain = LogicAgent(CNFEncoder(), plain_solver, enable_witness_cache=False).classify_all(partial_state)
+    res_cached = LogicAgent(CNFEncoder(), cached_solver, enable_witness_cache=True).classify_all(partial_state)
+
+    assert res_plain == res_cached
+    assert res_cached[b1] is Classification.UNKNOWN
+    assert res_cached[c1] is Classification.UNKNOWN
+    assert cached_solver.calls < plain_solver.calls

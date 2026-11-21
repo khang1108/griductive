@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Any, Mapping, Protocol, Sequence, runtime_checkable
 
 from griductive.domain.clues import Clue
-from griductive.domain.models import CellId, Classification, Status
+from griductive.domain.models import CellId, Character, Classification, Status
 
 
 class VerdictAssessmentType(str, Enum):

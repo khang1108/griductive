@@ -206,8 +206,8 @@ class _ReferenceDPLLSolver:
         propagations = 0
         backtracks = 0
 
-        all_clauses = [tuple(c) for c in clauses] + [(lit,) for lit in assumptions]
-        if any(len(c) == 0 for c in all_clauses):
+        base_clauses = [tuple(c) for c in clauses]
+        if any(len(c) == 0 for c in base_clauses):
             runtime_ms = (time.perf_counter_ns() - start_ns) / 1_000_000.0
             return _ReferenceSATResult(
                 is_sat=False,
@@ -215,7 +215,37 @@ class _ReferenceDPLLSolver:
                 stats=SolverStatsSnapshot(0, 0, 1, runtime_ms),
             )
 
-        variables = sorted({abs(lit) for clause in all_clauses for lit in clause})
+        variables = sorted(
+            {abs(lit) for clause in base_clauses for lit in clause}
+            | {abs(lit) for lit in assumptions}
+        )
+
+        def _assign_literal(
+            cur_clauses: list[tuple[int, ...]],
+            cur_assign: dict[int, bool],
+            lit: int,
+        ) -> tuple[list[tuple[int, ...]] | None, dict[int, bool]]:
+            var = abs(lit)
+            val = lit > 0
+            if var in cur_assign:
+                if cur_assign[var] != val:
+                    return None, cur_assign
+                return list(cur_clauses), dict(cur_assign)
+
+            assigned = dict(cur_assign)
+            assigned[var] = val
+            next_clauses: list[tuple[int, ...]] = []
+            for c in cur_clauses:
+                if lit in c:
+                    continue
+                if -lit in c:
+                    reduced = tuple(x for x in c if x != -lit)
+                    if not reduced:
+                        return None, assigned
+                    next_clauses.append(reduced)
+                else:
+                    next_clauses.append(c)
+            return next_clauses, assigned
 
         def _unit_propagate(
             cur_clauses: list[tuple[int, ...]],
@@ -235,24 +265,11 @@ class _ReferenceDPLLSolver:
                     break
 
                 propagations += 1
-                var = abs(unit)
-                val = unit > 0
-                if var in assigned and assigned[var] != val:
-                    return None, assigned
-                assigned[var] = val
-
-                next_clauses = []
-                for c in c_list:
-                    if unit in c:
-                        continue
-                    if -unit in c:
-                        reduced = tuple(x for x in c if x != -unit)
-                        if not reduced:
-                            return None, assigned
-                        next_clauses.append(reduced)
-                    else:
-                        next_clauses.append(c)
+                next_clauses, next_assigned = _assign_literal(c_list, assigned, unit)
+                if next_clauses is None:
+                    return None, next_assigned
                 c_list = next_clauses
+                assigned = next_assigned
 
             return c_list, assigned
 
@@ -280,9 +297,10 @@ class _ReferenceDPLLSolver:
 
             for branch_val in (True, False):
                 lit = branch_var if branch_val else -branch_var
-                branch_clauses = list(reduced) + [(lit,)]
-                branch_assign = dict(new_assign)
-                branch_assign[branch_var] = branch_val
+                branch_clauses, branch_assign = _assign_literal(reduced, new_assign, lit)
+                if branch_clauses is None:
+                    backtracks += 1
+                    continue
 
                 sub_res = _dpll(branch_clauses, branch_assign)
                 if sub_res is not None:
@@ -290,7 +308,20 @@ class _ReferenceDPLLSolver:
 
             return None
 
-        model = _dpll(all_clauses, {})
+        init_clauses = base_clauses
+        init_assign: dict[int, bool] = {}
+        for lit in assumptions:
+            next_init, init_assign = _assign_literal(init_clauses, init_assign, lit)
+            if next_init is None:
+                runtime_ms = (time.perf_counter_ns() - start_ns) / 1_000_000.0
+                return _ReferenceSATResult(
+                    is_sat=False,
+                    model=None,
+                    stats=SolverStatsSnapshot(0, 0, 1, runtime_ms),
+                )
+            init_clauses = next_init
+
+        model = _dpll(init_clauses, init_assign)
         runtime_ms = (time.perf_counter_ns() - start_ns) / 1_000_000.0
         return _ReferenceSATResult(
             is_sat=model is not None,
@@ -344,7 +375,7 @@ class _StepAnalysisContext:
             self.enable_witness_cache
             and result.is_sat
             and result.model is not None
-            and self.primary_vars.issubset(result.model.keys())
+            and bool(result.model)
         ):
             self.witness_models.append(result.model)
         return result

@@ -3,6 +3,7 @@
 from .logic_agent import LogicAgent
 from .models import (
     CNFEncoderProtocol,
+    CompleteCluesPublicCell,
     CompleteCluesPublicState,
     DeductionResult,
     DeductionStepTrace,
@@ -19,6 +20,7 @@ from .models import (
 
 __all__ = [
     "CNFEncoderProtocol",
+    "CompleteCluesPublicCell",
     "CompleteCluesPublicState",
     "DeductionResult",
     "DeductionStepTrace",
