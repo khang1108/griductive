@@ -42,10 +42,6 @@ export function App() {
     fetchGameState()
       .then((state) => {
         setGameState(state);
-        setBanner({
-          message: `Loaded mystery: ${state.current_stage} (${state.size}×${state.size}).`,
-          type: "info",
-        });
       })
       .catch((err) => {
         console.error(err);
