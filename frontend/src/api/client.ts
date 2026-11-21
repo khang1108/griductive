@@ -57,7 +57,13 @@ export async function fetchHint(): Promise<{ hint: string; cell?: string; status
   return res.json();
 }
 
-export async function executeAutoSolve(): Promise<GameState & { steps_taken?: number; trace?: string[] }> {
+export async function executeAutoSolve(): Promise<
+  GameState & {
+    status: "SOLVED" | "STALLED";
+    steps_taken: number;
+    trace: string[];
+  }
+> {
   const res = await fetch(`${API_BASE}/api/auto-solve`, {
     method: "POST",
   });

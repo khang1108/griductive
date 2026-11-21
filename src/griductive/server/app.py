@@ -16,8 +16,9 @@ from griductive.engine.puzzle_db import (
     load_puzzle_from_sqlite,
     seed_database_from_json_dir,
 )
+from griductive.logic.agent import LogicAgent, TerminalStatus
 from griductive.server.avatar_cache import get_avatar_png
-from griductive.server.serializers import serialize_game_state
+from griductive.server.serializers import format_clue, serialize_game_state
 
 app = FastAPI(title="Griductive Web API", version="1.0.0")
 
@@ -176,18 +177,50 @@ def get_hint() -> dict[str, Any]:
 
 @app.post("/api/auto-solve")
 def auto_solve() -> dict[str, Any]:
-    # Extension point: connect your group's DPLL SAT Solver & Deductive Logic Agent here
     assert session.engine is not None
+    agent = LogicAgent()
+    result = agent.run_logic_loop(session.engine)
+
+    if result.terminal_status is TerminalStatus.INCONSISTENT:
+        raise HTTPException(
+            status_code=409,
+            detail="Current knowledge base is inconsistent (UNSAT).",
+        )
+
+    trace = [
+        (
+            f"Step {step.step}: Forced {step.verdict_status.value} for "
+            f"{step.verdict_cell.to_label()} "
+            f"(Revealed: {format_clue(session.engine._puzzle.get_clue(step.verdict_cell))})"
+        )
+        for step in result.steps
+    ]
+
+    is_solved = session.engine.is_solved()
+    if is_solved:
+        message = f"Auto-solve completed: {len(trace)} entailed verdict(s) revealed."
+        banner_type = "success"
+        status = "SOLVED"
+    else:
+        state = session.engine.get_public_state()
+        message = (
+            "Auto-solve paused: no forced verdict is currently provable "
+            f"({len(state.known_statuses())}/{len(state.cells)} cards solved)."
+        )
+        banner_type = "info"
+        status = "STALLED"
+
     state_data = serialize_game_state(
         session.engine,
         session.current_stage,
         session.available_stages,
-        banner_message="⚡ AI Auto-Solve: Extension point reserved for your group's DPLL SAT Solver.",
-        banner_type="info",
+        banner_message=message,
+        banner_type=banner_type,
         stage_catalog=session.stage_catalog,
     )
-    state_data["status"] = "RESERVED_FOR_GROUP"
-    state_data["message"] = "Implement your DPLL and Logic Agent to automate case solving."
+    state_data["status"] = status
+    state_data["steps_taken"] = len(trace)
+    state_data["trace"] = trace
     return state_data
 
 
