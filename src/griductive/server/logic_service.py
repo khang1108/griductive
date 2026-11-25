@@ -2,11 +2,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from griductive.domain.models import Classification
+from griductive.domain.models import CellId, Classification, Status
 from griductive.domain.state import PublicState
-from griductive.engine.game_engine import GameEngine
+from griductive.engine.game_engine import GameEngine, VerifiedVerdict
 from griductive.logic.agent.logic_agent import LogicAgent
-from griductive.logic.agent.models import DeductionResult, HintResult, TerminalStatus
+from griductive.logic.agent.models import (
+    DeductionResult,
+    HintResult,
+    TerminalStatus,
+    VerdictAssessmentType,
+)
 from griductive.logic.cnf import CNFEncoder
 from griductive.logic.sat import DPLLSolver
 
@@ -15,6 +20,14 @@ from griductive.logic.sat import DPLLSolver
 class StepExecution:
     outcome: str
     result: DeductionResult
+
+
+@dataclass(frozen=True)
+class VerdictExecution:
+    ok: bool
+    assessment: str
+    reason: str
+    revealed_clue_id: str | None = None
 
 
 class LogicService:
@@ -49,3 +62,33 @@ class LogicService:
 
     def run(self, engine: GameEngine, *, timeout_ms: float = 10000) -> DeductionResult:
         return self._agent.run_logic_loop(engine, timeout_ms=timeout_ms)
+
+    def assess_and_commit_verdict(
+        self,
+        engine: GameEngine,
+        cell: CellId,
+        status: Status,
+    ) -> VerdictExecution:
+        """Assess whether a verdict is logically forced; commit only when PROVABLE."""
+        state = engine.get_public_state()
+        res = self._agent.assess_verdict(state, cell, status)
+        if res.assessment is VerdictAssessmentType.PROVABLE:
+            verdict = VerifiedVerdict(
+                session_id=state.session_id,
+                revision=state.revision,
+                cell=cell,
+                status=status,
+            )
+            reveal = engine.commit_verified_verdict(verdict)
+            return VerdictExecution(
+                ok=True,
+                assessment="PROVABLE",
+                reason=res.reason,
+                revealed_clue_id=reveal.revealed_clue.clue_id,
+            )
+
+        return VerdictExecution(
+            ok=False,
+            assessment=res.assessment.value,
+            reason=res.reason,
+        )

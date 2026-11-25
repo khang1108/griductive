@@ -1,0 +1,93 @@
+{
+  "title": "Griductive CC0 starter models",
+  "prepared_on": "2026-11-25",
+  "source_provider": "Poly Haven",
+  "source_provider_url": "https://polyhaven.com/",
+  "license": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "provider_license_url": "https://polyhaven.com/license",
+  "provenance_statement_url": "https://polyhaven.com/",
+  "provenance_note": "Poly Haven states its assets are human-made and avoid generative AI. This is the provider declaration, not an independent production audit.",
+  "modifications": "Selected the official 1K glTF variants, embedded original geometry buffers and original JPEG textures into self-contained GLB containers. Geometry, UVs and materials were not remeshed or restyled. No generative AI assets are added.",
+  "validation_scope": "Source sizes and MD5 verified against Poly Haven API metadata. Independent GLB structural QA: header/chunk alignment, buffer/accessor bounds, geometry and index bounds, node/material/texture references, byte preservation, embedded image decode with Pillow, SHA-256. No visual rendering or target-device performance benchmark.",
+  "models": [
+    {
+      "id": "wooden_table_02",
+      "file": "models/wooden_table_02.glb",
+      "authors": [
+        "Serhii Khromov"
+      ],
+      "source_url": "https://polyhaven.com/a/wooden_table_02",
+      "texture_variant": "1k",
+      "size_bytes": 484344,
+      "sha256": "b34bcb468265352371b0b031bf66872732ac34835b92d6fdea059719edd79cd0",
+      "unique_mesh_triangles": 196,
+      "meshes": 1,
+      "materials": 1,
+      "embedded_images": 3,
+      "animation_clips": 0,
+      "extensions_required": [],
+      "skins": 0,
+      "validation_result": "PASS"
+    },
+    {
+      "id": "desk_lamp_arm_01",
+      "file": "models/desk_lamp_arm_01.glb",
+      "authors": [
+        "Kuutti Siitonen (modeling and texturing)",
+        "Yann Kervran (rigging)"
+      ],
+      "source_url": "https://polyhaven.com/a/desk_lamp_arm_01",
+      "texture_variant": "1k",
+      "size_bytes": 2874264,
+      "sha256": "f76c78c105ea7dca2569e47cd0f61666be29d0c10985a3262da4accc4899386a",
+      "unique_mesh_triangles": 24102,
+      "meshes": 1,
+      "materials": 2,
+      "embedded_images": 3,
+      "animation_clips": 0,
+      "extensions_required": [],
+      "skins": 0,
+      "validation_result": "PASS"
+    },
+    {
+      "id": "binder_notebook",
+      "file": "models/binder_notebook.glb",
+      "authors": [
+        "DaDrood"
+      ],
+      "source_url": "https://polyhaven.com/a/binder_notebook",
+      "texture_variant": "1k",
+      "size_bytes": 1888132,
+      "sha256": "d427bfa5b0c580a1dc0e3c8a635c89e6783e1e84da8eb66ac4556d767ff4d10f",
+      "unique_mesh_triangles": 18077,
+      "meshes": 2,
+      "materials": 1,
+      "embedded_images": 3,
+      "animation_clips": 0,
+      "extensions_required": [],
+      "skins": 0,
+      "validation_result": "PASS"
+    },
+    {
+      "id": "stationery_supplies",
+      "file": "models/stationery_supplies.glb",
+      "authors": [
+        "Mateusz Sadek"
+      ],
+      "source_url": "https://polyhaven.com/a/stationery_supplies",
+      "texture_variant": "1k",
+      "size_bytes": 1980660,
+      "sha256": "26c665662a941ed5fe330b10fa679ba3f5a9184dc972f364a79590243e4b534f",
+      "unique_mesh_triangles": 4412,
+      "meshes": 9,
+      "materials": 1,
+      "embedded_images": 3,
+      "animation_clips": 0,
+      "extensions_required": [],
+      "skins": 0,
+      "validation_result": "PASS"
+    }
+  ],
+  "validation_result": "PASS for all four GLBs; all 12 embedded RGB JPEGs are 1024x1024; no external resources or required extensions."
+}

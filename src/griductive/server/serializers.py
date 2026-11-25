@@ -26,6 +26,86 @@ from griductive.engine.game_engine import GameEngine
 from griductive.logic.agent.models import DeductionResult, DeductionStepTrace
 
 
+def serialize_region_descriptor(region: RegionSpec) -> tuple[str, str, dict[str, Any]]:
+    """Return structured (region_kind, region_label, region_params) for a RegionSpec."""
+    match region:
+        case RowRegion(row):
+            return ("ROW", f"Row {row + 1}", {"row": row})
+        case ColumnRegion(col):
+            return ("COLUMN", f"Col {chr(ord('A') + col)}", {"col": col})
+        case NeighborsRegion(center):
+            label = center.to_label()
+            return ("NEIGHBORS", f"Neighbors of {label}", {"center": label})
+        case ExplicitRegion(cells):
+            cell_labels = [c.to_label() for c in cells]
+            return ("EXPLICIT", f"[{', '.join(cell_labels)}]", {"cells": cell_labels})
+        case IntersectionRegion(left, right):
+            lk, left_label, lp = serialize_region_descriptor(left)
+            rk, right_label, rp = serialize_region_descriptor(right)
+            return (
+                "INTERSECTION",
+                f"{left_label} ∩ {right_label}",
+                {
+                    "left": {"kind": lk, "label": left_label, "params": lp},
+                    "right": {"kind": rk, "label": right_label, "params": rp},
+                },
+            )
+        case _:
+            raise TypeError(f"Unknown region type: {type(region)}")
+
+
+def serialize_clue_descriptor(clue: Clue) -> dict[str, Any]:
+    """Return a structured descriptor payload for a revealed Clue."""
+    targets: list[str] = []
+    target_status: str | None = None
+    region_kind: str | None = None
+    region_label: str | None = None
+    region_params: dict[str, Any] | None = None
+    k: int | None = None
+    parity: str | None = None
+
+    match clue:
+        case FactClue(target=target, status=status):
+            kind = "FACT"
+            targets = [target.to_label()]
+            target_status = status.value
+        case SameClue(left=left, right=right):
+            kind = "SAME"
+            targets = [left.to_label(), right.to_label()]
+        case DifferentClue(left=left, right=right):
+            kind = "DIFFERENT"
+            targets = [left.to_label(), right.to_label()]
+        case ExactlyClue(region=region, k=count):
+            kind = "EXACTLY"
+            region_kind, region_label, region_params = serialize_region_descriptor(region)
+            k = count
+        case AtLeastClue(region=region, k=count):
+            kind = "ATLEAST"
+            region_kind, region_label, region_params = serialize_region_descriptor(region)
+            k = count
+        case AtMostClue(region=region, k=count):
+            kind = "ATMOST"
+            region_kind, region_label, region_params = serialize_region_descriptor(region)
+            k = count
+        case ParityClue(region=region, parity=clue_parity):
+            kind = "PARITY"
+            region_kind, region_label, region_params = serialize_region_descriptor(region)
+            parity = clue_parity.value
+        case _:
+            raise TypeError(f"Unknown clue type: {type(clue)}")
+
+    return {
+        "kind": kind,
+        "targets": targets,
+        "target_status": target_status,
+        "region_kind": region_kind,
+        "region_label": region_label,
+        "region_params": region_params,
+        "k": k,
+        "parity": parity,
+    }
+
+
 def format_region(region: RegionSpec) -> str:
     match region:
         case RowRegion(row):
@@ -103,6 +183,7 @@ def serialize_game_state(
         cid = pc.character.cell_id
         clue_text = format_clue(pc.revealed_clue) if pc.revealed_clue else None
         clue_type = type(pc.revealed_clue).__name__.replace("Clue", "").upper() if pc.revealed_clue else None
+        clue_descriptor = serialize_clue_descriptor(pc.revealed_clue) if pc.revealed_clue else None
         ref_coords = get_referenced_coords(pc.revealed_clue, layout) if pc.revealed_clue else []
 
         cells_data.append({
@@ -115,6 +196,7 @@ def serialize_game_state(
             "status": pc.known_status.value if pc.known_status else None,
             "clue_text": clue_text,
             "clue_type": clue_type,
+            "clue_descriptor": clue_descriptor,
             "referenced_coords": ref_coords,
             "avatar_url": f"/api/avatars/{pc.character.name}",
         })
@@ -130,6 +212,7 @@ def serialize_game_state(
             "owner_avatar_url": f"/api/avatars/{char.name}",
             "type": type(clue).__name__.replace("Clue", "").upper(),
             "text": format_clue(clue),
+            "descriptor": serialize_clue_descriptor(clue),
             "referenced_coords": get_referenced_coords(clue, layout),
         })
 

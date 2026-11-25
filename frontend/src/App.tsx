@@ -1,660 +1,567 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { CellData, GameState, LogEntry, StepResponse, VerdictStatus } from "./types";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AlertOctagon, Loader2, RotateCw } from "lucide-react";
+import { soundEngine } from "./audio/soundEngine";
 import {
-  ApiError,
-  fetchGameState,
-  submitVerdict,
-  restartGame,
-  loadStage,
-  fetchHint,
-} from "./api/client";
-import { useAutoSolve } from "./hooks/useAutoSolve";
-import { Header } from "./components/header";
-import { Banner } from "./components/feedback";
-import { Board } from "./components/board";
-import { CaseEvidence } from "./components/evidence";
-import { VerdictModal, PauseModal, VictoryModal } from "./components/modals";
-
-function formatTraceStep(response: StepResponse): string | null {
-  const step = response.step;
-  if (!step) return null;
-
-  const clueIds = step.active_clue_ids.length
-    ? step.active_clue_ids.join(", ")
-    : "none";
-  const newClue = step.new_clue_id
-    ? response.state.active_clues.find((clue) => clue.clue_id === step.new_clue_id)
-    : undefined;
-  return [
-    `⚡ Step ${step.step}: ${step.verdict_cell} classified as ${step.verdict_status}`,
-    `clues ${clueIds}`,
-    `${step.sat_queries} SAT queries`,
-    `${step.primary_vars_count} primary + ${step.aux_vars_count} auxiliary vars`,
-    `${step.clause_count} clauses`,
-    `new clue ${step.new_clue_id ?? "none"}${newClue ? `: ${newClue.text}` : ""}`,
-    `decisions ${step.stats.decisions}, propagations ${step.stats.propagations}, backtracks ${step.stats.backtracks}`,
-    `${step.stats.runtime_ms.toFixed(2)} ms solver`,
-  ].join(" · ");
-}
+  ActionDock,
+  Banner,
+  CaseReportModal,
+  EvidenceNotebook,
+  Header,
+  InvestigationBoard,
+  InvestigationScene,
+  PauseModal,
+  RestartConfirmModal,
+  SettingsModal,
+  SuspectInspector,
+} from "./components";
+import { useGameSession } from "./hooks/useGameSession";
+import { usePlayerNotes, type NotePatch } from "./hooks/usePlayerNotes";
+import { useSettings } from "./hooks/useSettings";
+import {
+  computeBoardLayout,
+  getBoardWorldBounds,
+  getCellRect,
+} from "./layout/boardLayout";
+import type { CellData, VerdictStatus } from "./types";
 
 export function App() {
-  const [gameState, setGameState] = useState<GameState | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(true);
-  const [isPaused, setIsPaused] = useState(false);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [selectedVerdictCell, setSelectedVerdictCell] = useState<CellData | null>(null);
-  const [highlightedCoords, setHighlightedCoords] = useState<string[]>([]);
-  const [isResyncing, setIsResyncing] = useState(false);
-  const [isStateActionPending, setIsStateActionPending] = useState(false);
-  const [needsResync, setNeedsResync] = useState(false);
-  const [banner, setBanner] = useState<{
-    message: string | null;
-    type: "success" | "error" | "info" | null;
-  }>({ message: null, type: null });
-  const [logs, setLogs] = useState<LogEntry[]>([
-    {
-      id: "init",
-      time: "00:00",
-      text: "✦ Case investigation started. Pure deduction — no guessing.",
-      type: "info",
-    },
+  const {
+    settings,
+    updateSettings,
+    resetSettings,
+    osReducedMotion,
+    effectiveReducedMotion,
+    viewport,
+  } = useSettings();
+
+  const session = useGameSession({ settings, effectiveReducedMotion });
+  const playerNotes = usePlayerNotes(session.gameState?.current_stage);
+
+  const isDrawerMode = viewport.isMobile || viewport.isTablet;
+  const isDesktop = !isDrawerMode;
+
+  const [isNotebookOpen, setIsNotebookOpen] = useState<boolean>(
+    () => !viewport.isMobile && !viewport.isTablet
+  );
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isRestartConfirmOpen, setIsRestartConfirmOpen] = useState(false);
+  const [caseReportDismissed, setCaseReportDismissed] = useState(false);
+  const [liveAnnouncement, setLiveAnnouncement] = useState("");
+
+  const focusCellRef = useRef<((coord: string) => void) | null>(null);
+  const lastAnnouncedLogIdRef = useRef<string | null>(null);
+  const prevDesktopRef = useRef<boolean>(isDesktop);
+
+  const reducedMotionAttr = effectiveReducedMotion ? "true" : "false";
+
+  // Sync default Clues panel visibility only when crossing mobile/desktop breakpoint
+  useEffect(() => {
+    if (prevDesktopRef.current !== isDesktop) {
+      prevDesktopRef.current = isDesktop;
+      setIsNotebookOpen(isDesktop);
+    }
+  }, [isDesktop]);
+
+  // Reset per-session modal states whenever session_id changes
+  useEffect(() => {
+    setCaseReportDismissed(false);
+    setIsRestartConfirmOpen(false);
+  }, [session.gameState?.session_id]);
+
+  // Screen-reader announcements
+  useEffect(() => {
+    const announce = (text: string) => {
+      if (!text) return;
+      setLiveAnnouncement((prev) => (prev === text ? `${text}\u00A0` : text));
+    };
+
+    const latestLog = session.logs[session.logs.length - 1];
+    if (latestLog && latestLog.id !== lastAnnouncedLogIdRef.current) {
+      lastAnnouncedLogIdRef.current = latestLog.id;
+
+      if (latestLog.tag === "[PROVABLE]") {
+        const solvedSuffix = session.gameState?.is_solved
+          ? " Case closed."
+          : "";
+        announce(
+          `${session.banner.message ?? latestLog.text}${solvedSuffix}`
+        );
+      } else if (
+        latestLog.tag === "[NOT_PROVABLE]" ||
+        latestLog.tag === "[CONTRADICTED]" ||
+        latestLog.tag === "[INCONSISTENT]"
+      ) {
+        announce(session.banner.message ?? latestLog.text);
+      } else if (latestLog.tag === "[HINT]") {
+        announce(`Hint: ${session.banner.message ?? latestLog.text}`);
+      } else if (latestLog.tag === "[AI_STEP]" && session.lastStep) {
+        announce(
+          `AI proved ${session.lastStep.verdict_cell} as ${session.lastStep.verdict_status}.`
+        );
+      }
+    }
+  }, [
+    session.logs,
+    session.banner,
+    session.lastStep,
+    session.gameState?.is_solved,
   ]);
 
-  const gameStateRef = useRef<GameState | null>(null);
-  const controlsBlockedRef = useRef(false);
-  const needsResyncRef = useRef(false);
-  const stateChangeGenerationRef = useRef(0);
-  const stateActionPendingRef = useRef(false);
-  const mountedRef = useRef(false);
-  const stepCountRef = useRef(0);
-
-  const isCurrentGeneration = (generation: number) =>
-    mountedRef.current && stateChangeGenerationRef.current === generation;
-
-  const beginStateAction = (): number | null => {
-    if (
-      !mountedRef.current ||
-      controlsBlockedRef.current ||
-      stateActionPendingRef.current
-    ) {
-      return null;
-    }
-
-    stateActionPendingRef.current = true;
-    controlsBlockedRef.current = true;
-    setIsStateActionPending(true);
-    stateChangeGenerationRef.current += 1;
-    return stateChangeGenerationRef.current;
-  };
-
-  const finishStateAction = (generation: number) => {
-    if (!isCurrentGeneration(generation)) return;
-    stateActionPendingRef.current = false;
-    setIsStateActionPending(false);
-  };
-
-  const applyResyncedState = (currentState: GameState) => {
-    const previousState = gameStateRef.current;
-    gameStateRef.current = currentState;
-    setGameState(currentState);
-    setHighlightedCoords([]);
-    setSelectedVerdictCell(null);
-
-    if (previousState?.session_id !== currentState.session_id) {
-      setElapsedSeconds(0);
-      stepCountRef.current = currentState.revision;
-      setLogs([
-        {
-          id: `resync-${Date.now()}`,
-          time: "Sync",
-          text: `✦ Refreshed case ${currentState.current_stage} from the server.`,
-          type: "info",
-        },
-      ]);
-    }
-  };
-
-  const handleAutoSolveStep = useCallback((response: StepResponse) => {
-    const latestState = gameStateRef.current;
-    if (
-      !latestState ||
-      response.state.session_id !== latestState.session_id ||
-      response.state.revision < latestState.revision
-    ) {
-      return;
-    }
-
-    gameStateRef.current = response.state;
-    stateChangeGenerationRef.current += 1;
-    setGameState(response.state);
-    setSelectedVerdictCell(null);
-
-    if (response.step) {
-      stepCountRef.current = Math.max(stepCountRef.current, response.step.step);
-      setHighlightedCoords([response.step.verdict_cell]);
-      const trace = formatTraceStep(response);
-      if (trace) {
-        setLogs((previous) => [
-          ...previous,
-          {
-            id: `auto-${response.state.session_id}-${response.step?.step}-${Date.now()}`,
-            time: "AI",
-            text: trace,
-            type: "success",
-          },
-        ]);
-      }
-    }
-
-    const metrics = response.metrics;
-    const metricSummary = `Last solver call: ${metrics.sat_queries} SAT queries, ${metrics.solver_runtime_ms.toFixed(2)} ms solver time.`;
-
-    if (response.outcome === "SOLVED" || response.state.is_solved) {
-      const message =
-        response.state.banner_message ||
-        `Auto-solve finished: ${response.state.solved_count}/${response.state.total_cells} cards solved. ${metricSummary}`;
-      setBanner({ message, type: "success" });
-      return;
-    }
-
-    if (response.outcome === "STUCK_NO_FORCIBLE_MOVE") {
-      setBanner({
-        message: `No more forced moves. ${response.state.solved_count}/${response.state.total_cells} cards solved. ${metricSummary}`,
-        type: "info",
-      });
-      return;
-    }
-
-    if (response.outcome === "INCONSISTENT") {
-      setBanner({
-        message: `The revealed clues are inconsistent. ${metricSummary}`,
-        type: "error",
-      });
-      return;
-    }
-
-    if (response.outcome === "ENGINE_REJECTED") {
-      setBanner({
-        message: "The game engine rejected a proven verdict. Auto-solve stopped.",
-        type: "error",
-      });
-      return;
-    }
-
-    if (response.outcome === "TIMEOUT") {
-      setBanner({ message: "The solver reached its time limit. Auto-solve stopped.", type: "error" });
-      return;
-    }
-
-    if (response.outcome === "IN_PROGRESS" && response.step) {
-      setBanner({
-        message: `Step ${response.step.step}: ${response.step.verdict_cell} is ${response.step.verdict_status}. ${metricSummary}`,
-        type: "info",
-      });
-    }
+  const registerFocusRef = useCallback((fn: (coord: string) => void) => {
+    focusCellRef.current = fn;
   }, []);
 
-  const handleAutoSolveError = useCallback(async (error: unknown) => {
-    if (!mountedRef.current) return;
-    stateChangeGenerationRef.current += 1;
-    const generation = stateChangeGenerationRef.current;
-    controlsBlockedRef.current = true;
-    needsResyncRef.current = true;
-    setNeedsResync(true);
-    setSelectedVerdictCell(null);
-    setIsResyncing(true);
-
-    const wasStale = error instanceof ApiError && error.status === 409;
-    setBanner({
-      message: wasStale
-        ? "The game changed in another tab. Refreshing the current state…"
-        : "Auto-solve request failed. Refreshing the current state…",
-      type: "info",
-    });
-
-    try {
-      const currentState = await fetchGameState();
-      if (!isCurrentGeneration(generation)) return;
-      applyResyncedState(currentState);
-
-      needsResyncRef.current = false;
-      setNeedsResync(false);
-      setBanner({
-        message: wasStale
-          ? `State refreshed after another tab changed the game (${currentState.current_stage}, revision ${currentState.revision}).`
-          : `State refreshed from the server (${currentState.current_stage}, revision ${currentState.revision}).`,
-        type: "info",
+  const handleCloseInspector = useCallback(() => {
+    const closingCoord = session.selectedCellCoord;
+    session.selectCell(null);
+    if (closingCoord) {
+      requestAnimationFrame(() => {
+        focusCellRef.current?.(closingCoord);
       });
-    } catch (resyncError) {
-      if (!isCurrentGeneration(generation)) return;
-      console.error(resyncError);
-      needsResyncRef.current = true;
-      setNeedsResync(true);
-      setBanner({
-        message: "Could not refresh game state. Retry the state refresh before continuing.",
-        type: "error",
-      });
-    } finally {
-      if (isCurrentGeneration(generation)) setIsResyncing(false);
     }
-  }, []);
+  }, [session.selectedCellCoord, session.selectCell]);
 
-  const autoSolve = useAutoSolve({
-    getState: () => gameStateRef.current,
-    onStep: handleAutoSolveStep,
-    onError: handleAutoSolveError,
-  });
-  const actionsDisabled =
-    autoSolve.isRunning ||
-    autoSolve.isStopping ||
-    isResyncing ||
-    needsResync ||
-    isStateActionPending;
-  controlsBlockedRef.current = actionsDisabled;
-  needsResyncRef.current = needsResync;
+  const handleSubmitVerdict = useCallback(
+    async (coord: string, status: VerdictStatus) => {
+      await session.submitCellVerdict(coord, status);
+    },
+    [session.submitCellVerdict]
+  );
 
-  // Guard async callbacks that outlive the mounted game view.
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      stateChangeGenerationRef.current += 1;
-      stateActionPendingRef.current = false;
-    };
-  }, []);
-
-  // Load initial game state
-  useEffect(() => {
-    let active = true;
-    fetchGameState()
-      .then((state) => {
-        if (!active) return;
-        gameStateRef.current = state;
-        setGameState(state);
-      })
-      .catch((error: unknown) => {
-        if (!active) return;
-        console.error(error);
-        setBanner({
-          message: "Could not connect to Python game backend.",
-          type: "error",
-        });
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  // Timer loop
-  useEffect(() => {
-    if (isPaused || !gameState || gameState.is_solved) return;
-    const interval = setInterval(() => {
-      setElapsedSeconds((seconds) => seconds + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isPaused, gameState]);
-
-  // Handle verdict submission
-  const handleSelectVerdict = async (coord: string, status: VerdictStatus) => {
-    const generation = beginStateAction();
-    if (generation === null) return;
-    setSelectedVerdictCell(null);
-    stepCountRef.current += 1;
-    const currentStep = stepCountRef.current;
-
-    const minutes = Math.floor(elapsedSeconds / 60)
-      .toString()
-      .padStart(2, "0");
-    const seconds = (elapsedSeconds % 60).toString().padStart(2, "0");
-    const timeStr = `${minutes}:${seconds}`;
-
-    try {
-      const newState = await submitVerdict(coord, status);
-      if (!isCurrentGeneration(generation)) return;
-      gameStateRef.current = newState;
-      setGameState(newState);
-
-      if (newState.verdict_success) {
-        setBanner({
-          message: newState.banner_message || `✓ Correct call! ${coord} is ${status}.`,
-          type: "success",
-        });
-        setLogs((previous) => [
-          ...previous,
-          {
-            id: `step-${currentStep}`,
-            time: timeStr,
-            text: `Step ${currentStep}: ${coord} classified as ${status} (Entailed)`,
-            type: "success",
-          },
-        ]);
-      } else {
-        setBanner({
-          message: newState.banner_message || `✗ Cannot prove ${coord} is ${status}. Rejected.`,
-          type: "error",
-        });
-        setLogs((previous) => [
-          ...previous,
-          {
-            id: `step-${currentStep}`,
-            time: timeStr,
-            text: `Step ${currentStep}: ${coord} as ${status} rejected (Not forced by current facts)`,
-            type: "error",
-          },
-        ]);
+  const handleUpdateNote = useCallback(
+    (coord: string, patch: NotePatch) => {
+      if (typeof patch === "function" || "text" in patch) {
+        soundEngine.playPencilTick();
       }
-    } catch (error) {
-      if (!isCurrentGeneration(generation)) return;
-      console.error(error);
-      setBanner({ message: "Failed to submit verdict to server.", type: "error" });
-    } finally {
-      finishStateAction(generation);
-    }
-  };
+      playerNotes.setNote(coord, patch);
+    },
+    [playerNotes.setNote]
+  );
 
-  // Handle stage change
-  const handleStageChange = async (stage: string) => {
-    const generation = beginStateAction();
-    if (generation === null) return;
-    try {
-      const newState = await loadStage(stage);
-      if (!isCurrentGeneration(generation)) return;
-      gameStateRef.current = newState;
-      setGameState(newState);
-      setElapsedSeconds(0);
-      stepCountRef.current = 0;
-      setHighlightedCoords([]);
-      setSelectedVerdictCell(null);
-      setBanner({
-        message: `Loaded stage: ${stage} (${newState.size}×${newState.size}).`,
-        type: "info",
-      });
-      setLogs([
-        {
-          id: `load-${Date.now()}`,
-          time: "00:00",
-          text: `✦ Loaded case ${stage}.`,
-          type: "info",
-        },
-      ]);
-    } catch (error) {
-      if (!isCurrentGeneration(generation)) return;
-      console.error(error);
-      setBanner({ message: "Could not load that case.", type: "error" });
-    } finally {
-      finishStateAction(generation);
-    }
-  };
+  const handleClearNote = useCallback(
+    (coord: string) => {
+      playerNotes.clearNote(coord);
+      soundEngine.playPencilTick();
+    },
+    [playerNotes.clearNote]
+  );
 
-  // Handle restart
-  const handleRestart = async () => {
-    const generation = beginStateAction();
-    if (generation === null) return;
-    try {
-      const newState = await restartGame();
-      if (!isCurrentGeneration(generation)) return;
-      gameStateRef.current = newState;
-      setGameState(newState);
-      setElapsedSeconds(0);
-      stepCountRef.current = 0;
-      setHighlightedCoords([]);
-      setSelectedVerdictCell(null);
-      setBanner({ message: "Game restarted. Ready for pure deduction.", type: "info" });
-      setLogs([
-        {
-          id: `restart-${Date.now()}`,
-          time: "00:00",
-          text: "✦ Game restarted.",
-          type: "info",
-        },
-      ]);
-    } catch (error) {
-      if (!isCurrentGeneration(generation)) return;
-      console.error(error);
-      setBanner({ message: "Could not restart the game.", type: "error" });
-    } finally {
-      finishStateAction(generation);
-    }
-  };
-
-  // Handle hint
-  const handleHint = async () => {
-    if (controlsBlockedRef.current) return;
-    const requestedState = gameStateRef.current;
-    if (!requestedState) return;
-    const requestedGeneration = stateChangeGenerationRef.current;
-    try {
-      const data = await fetchHint();
-      const latestState = gameStateRef.current;
-      if (
-        !isCurrentGeneration(requestedGeneration) ||
-        controlsBlockedRef.current ||
-        !latestState ||
-        latestState.session_id !== requestedState.session_id ||
-        latestState.revision !== requestedState.revision ||
-        data.session_id !== requestedState.session_id ||
-        data.revision !== requestedState.revision
-      ) {
-        return;
-      }
-
-      let message = data.hint;
-      if (data.outcome === "SOLVED") message = "This case is already solved.";
-      else if (data.outcome === "STUCK_NO_FORCIBLE_MOVE") {
-        message = "No currently forced move is available.";
-      } else if (data.outcome === "INCONSISTENT") {
-        message = "The revealed clues are inconsistent.";
-      } else if (data.cell && data.status) {
-        message = `${data.hint} (${data.cell}: ${data.status})`;
-      }
-
-      setBanner({ message, type: data.outcome === "INCONSISTENT" ? "error" : "info" });
-      setLogs((previous) => [
-        ...previous,
-        {
-          id: `hint-${Date.now()}`,
-          time: "Hint",
-          text: `💡 ${message} [${data.outcome}]`,
-          type: data.outcome === "INCONSISTENT" ? "error" : "info",
-        },
-      ]);
-    } catch (error) {
-      if (!isCurrentGeneration(requestedGeneration)) return;
-      console.error(error);
-      setBanner({ message: "Could not fetch a hint.", type: "error" });
-    }
-  };
-
-  const handleAutoSolve = () => {
-    if (controlsBlockedRef.current || stateActionPendingRef.current) return;
-    const currentState = gameStateRef.current;
-    if (!currentState || currentState.is_solved || currentState.is_contradicted) return;
-
-    stateChangeGenerationRef.current += 1;
-    setSelectedVerdictCell(null);
-    setBanner({ message: "Auto-solve started. Showing each proven verdict as it arrives.", type: "info" });
-    controlsBlockedRef.current = true;
-    autoSolve.start();
-  };
-
-  const handleStopAutoSolve = () => autoSolve.stop();
-
-  const handlePause = async () => {
-    await autoSolve.stop();
-    if (mountedRef.current && !needsResyncRef.current) setIsPaused(true);
-  };
-
-  const handleRetryStateSync = async () => {
-    if (
-      !mountedRef.current ||
-      !needsResyncRef.current ||
-      isResyncing ||
-      autoSolve.isRunning ||
-      autoSolve.isStopping ||
-      stateActionPendingRef.current
-    ) {
-      return;
-    }
-
-    stateActionPendingRef.current = true;
-    controlsBlockedRef.current = true;
-    setIsStateActionPending(true);
-    stateChangeGenerationRef.current += 1;
-    const generation = stateChangeGenerationRef.current;
-    setIsResyncing(true);
-    try {
-      const currentState = await fetchGameState();
-      if (!isCurrentGeneration(generation)) return;
-      applyResyncedState(currentState);
-      needsResyncRef.current = false;
-      setNeedsResync(false);
-      setBanner({
-        message: `State refreshed (${currentState.current_stage}, revision ${currentState.revision}).`,
-        type: "info",
-      });
-    } catch (error) {
-      if (!isCurrentGeneration(generation)) return;
-      console.error(error);
-      needsResyncRef.current = true;
-      setNeedsResync(true);
-      setBanner({
-        message: "Could not refresh game state. Retry when the server is reachable.",
-        type: "error",
-      });
-    } finally {
-      if (isCurrentGeneration(generation)) {
-        stateActionPendingRef.current = false;
-        setIsStateActionPending(false);
-        setIsResyncing(false);
-      }
-    }
-  };
-
-  // Switch to next available stage if available
-  const handleNextStage = () => {
-    const currentState = gameStateRef.current;
-    if (!currentState || controlsBlockedRef.current) return;
-    const idx = currentState.available_stages.indexOf(currentState.current_stage);
-    if (idx >= 0 && idx + 1 < currentState.available_stages.length) {
-      void handleStageChange(currentState.available_stages[idx + 1]);
+  const handleRequestRestart = useCallback(() => {
+    if (session.actionsDisabled) return;
+    if (playerNotes.hasNotes) {
+      soundEngine.playPaperSelect();
+      setIsRestartConfirmOpen(true);
     } else {
-      void handleRestart();
+      void session.restart();
     }
-  };
+  }, [session.actionsDisabled, session.restart, playerNotes.hasNotes]);
 
-  if (loading || !gameState) {
+  const handleHighlightCellClue = useCallback(
+    (cell: CellData) => {
+      const clue = session.gameState?.active_clues.find(
+        (c) => c.owner_coord === cell.coord
+      );
+      if (!clue) return;
+      if (session.selectedClueId === clue.clue_id) {
+        session.selectClue(null);
+      } else {
+        session.selectClue(clue.clue_id);
+      }
+    },
+    [session.gameState?.active_clues, session.selectedClueId, session.selectClue]
+  );
+
+  // Compute board pixel dimensions so cards stay generous and crisp inside the 3D scene
+  const boardLayout = useMemo(() => {
+    const sideAllowance = isDesktop
+      ? (isNotebookOpen ? 330 : 64) + (session.selectedCell ? 300 : 48)
+      : 36;
+    const verticalAllowance = viewport.isMobile ? 168 : 156;
+    return computeBoardLayout(session.gameState?.size ?? 3, {
+      compact: viewport.isCompact,
+      maxWidth: Math.max(250, viewport.width - sideAllowance),
+      maxHeight: Math.max(250, viewport.height - verticalAllowance),
+    });
+  }, [
+    session.gameState?.size,
+    viewport.isCompact,
+    viewport.isMobile,
+    viewport.width,
+    viewport.height,
+    isDesktop,
+    isNotebookOpen,
+    Boolean(session.selectedCell),
+  ]);
+
+  // Subtle horizontal framing offset so the 3D desk balances against open floating panels
+  const horizontalBiasNormalized = useMemo(() => {
+    if (!isDesktop) return 0;
+    const rightOpen = isNotebookOpen ? 1 : 0;
+    const leftOpen = session.selectedCell ? 1 : 0;
+    if (rightOpen && !leftOpen) return 0.24;
+    if (!rightOpen && leftOpen) return -0.2;
+    if (rightOpen && leftOpen) return 0.02;
+    return 0;
+  }, [isDesktop, isNotebookOpen, Boolean(session.selectedCell)]);
+
+  // World-space offset of the currently inspected suspect card for subtle 3D camera lean
+  const inspectWorldOffset = useMemo<[number, number] | null>(() => {
+    const cell = session.selectedCell;
+    if (!cell) return null;
+    const rect = getCellRect(boardLayout, cell.row, cell.col);
+    const bounds = getBoardWorldBounds(boardLayout);
+    const pxX = boardLayout.gridOffsetX + rect.cx - boardLayout.totalWidth / 2;
+    const pxY = boardLayout.gridOffsetY + rect.cy - boardLayout.totalHeight / 2;
+    return [pxX * bounds.worldPerPx, pxY * bounds.worldPerPx];
+  }, [session.selectedCell, boardLayout]);
+
+  const hasClueFocus = Boolean(
+    session.selectedClueId !== null ||
+      session.pinnedClueIds.length > 0 ||
+      session.presentation.hintedCellCoord !== null ||
+      session.presentation.hintedClueIds.length > 0
+  );
+
+  const isSelectedCellClueHighlighted = useMemo(() => {
+    if (!session.gameState || !session.selectedCell?.is_revealed) return false;
+    const clue = session.gameState.active_clues.find(
+      (c) => c.owner_coord === session.selectedCell?.coord
+    );
+    if (!clue) return false;
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#161311] text-[#F6EFE6] select-none">
-        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="font-serif text-lg tracking-wide">Opening Detective Casefile...</p>
+      session.selectedClueId === clue.clue_id ||
+      session.pinnedClueIds.includes(clue.clue_id)
+    );
+  }, [
+    session.gameState,
+    session.selectedCell,
+    session.selectedClueId,
+    session.pinnedClueIds,
+  ]);
+
+  const currentStageDisplayName = useMemo(() => {
+    const state = session.gameState;
+    if (!state) return "";
+    const info = state.stage_catalog?.find(
+      (s) => s.puzzle_id === state.current_stage
+    );
+    return (
+      info?.name ||
+      state.current_stage.replace(/_/g, " ").replace(/\.json$/i, "")
+    );
+  }, [session.gameState]);
+
+  const hasNextStage = useMemo(() => {
+    const state = session.gameState;
+    if (!state) return false;
+    const idx = state.available_stages.indexOf(state.current_stage);
+    return idx >= 0 && idx + 1 < state.available_stages.length;
+  }, [session.gameState]);
+
+  // Initial Loading Screen
+  if (session.initialLoading && !session.gameState) {
+    return (
+      <div
+        data-reduced-motion={reducedMotionAttr}
+        className="min-h-screen w-full flex flex-col items-center justify-center bg-[#14110E] text-[#F4ECDD] px-6 select-none"
+      >
+        <div className="flex flex-col items-center text-center gap-3">
+          <Loader2
+            className="w-7 h-7 text-[#E5BC74] animate-spin"
+            aria-hidden="true"
+          />
+          <h1 className="font-serif text-xl font-bold tracking-wide text-[#F4ECDD]">
+            Opening Casefile…
+          </h1>
+        </div>
       </div>
     );
   }
 
+  // Initial Load Error Screen
+  if (session.loadError && !session.gameState) {
+    return (
+      <div
+        data-reduced-motion={reducedMotionAttr}
+        className="min-h-screen w-full flex flex-col items-center justify-center bg-[#14110E] text-[#F4ECDD] px-6"
+      >
+        <div
+          role="alert"
+          className="w-full max-w-sm rounded-2xl border border-[#AD5147]/65 bg-[#1C1513] p-6 flex flex-col items-center text-center lamp-panel-shadow"
+        >
+          <AlertOctagon
+            className="w-6 h-6 text-[#E88B81] mb-3"
+            aria-hidden="true"
+          />
+          <h1 className="font-serif text-xl font-bold text-[#F4ECDD]">
+            Unable to Open Casefile
+          </h1>
+          <p className="mt-1.5 text-xs text-[#F3B5AF] leading-relaxed">
+            {session.loadError}
+          </p>
+          <button
+            type="button"
+            onClick={() => void session.retryInitialLoad()}
+            className="btn-tactile mt-5 inline-flex items-center justify-center gap-2 h-[40px] px-5 rounded-full bg-[#E5BC74] hover:bg-[#EECA8A] text-[#14110E] text-xs font-bold cursor-pointer"
+          >
+            <RotateCw className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>Retry</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const gameState = session.gameState;
+  if (!gameState) return null;
+
+  const showCaseReport = Boolean(
+    gameState.is_solved &&
+      session.presentation.caseClosedReady &&
+      !caseReportDismissed &&
+      !session.isPaused &&
+      !session.needsResync &&
+      !isRestartConfirmOpen &&
+      !isSettingsOpen
+  );
+
+  const bannerProps = session.needsResync
+    ? {
+        message:
+          session.banner.message ??
+          "Session state changed — refresh to continue.",
+        type: session.banner.type ?? ("error" as const),
+        assessment: session.banner.assessment,
+        onRetry: () => void session.retrySync(),
+        retryLabel: "Refresh",
+        isRetrying: session.isResyncing,
+        onClose: session.clearBanner,
+      }
+    : session.stageError
+      ? {
+          message: session.banner.message ?? session.stageError,
+          type: "error" as const,
+          assessment: null,
+          onRetry: () => void session.retryStageAction(),
+          retryLabel: "Retry",
+          isRetrying: session.isStageLoading,
+          onClose: () => {
+            session.dismissStageError();
+            session.clearBanner();
+          },
+        }
+      : {
+          message: session.banner.message,
+          type: session.banner.type,
+          assessment: session.banner.assessment,
+          onClose: session.clearBanner,
+        };
+
   return (
     <div
-      className={`h-screen w-screen flex flex-col overflow-hidden font-sans transition-colors duration-200 ${
-        darkMode ? "bg-[#161311] text-[#E2D7C8]" : "bg-[#F5EFE6] text-[#292524]"
-      }`}
+      data-reduced-motion={reducedMotionAttr}
+      className="relative h-screen w-screen overflow-hidden bg-[#120F0D] text-[#F4ECDD] font-sans"
     >
+      {/* Screen-Reader Live Region */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {liveAnnouncement}
+      </div>
+
+      {/* Full-Bleed 3D Midnight Archive Stage */}
+      <main
+        aria-label="3D investigation desk"
+        className="fixed inset-0 w-full h-full overflow-hidden"
+      >
+        <InvestigationScene
+          boardLayout={boardLayout}
+          quality={settings.quality}
+          cameraMode={session.presentation.cameraMode}
+          horizontalBiasNormalized={horizontalBiasNormalized}
+          inspectWorldOffset={inspectWorldOffset}
+          isPaused={session.isPaused}
+          reducedMotion={effectiveReducedMotion}
+        >
+          <InvestigationBoard
+            sessionKey={gameState.session_id}
+            size={gameState.size}
+            cells={gameState.cells}
+            layout={boardLayout}
+            selectedCellCoord={session.selectedCellCoord}
+            highlightedCoords={session.highlightedCoords}
+            selectedClue={session.selectedClue}
+            pinnedClues={session.pinnedClues}
+            pendingCoord={session.pendingCoord}
+            stampAnimatingCoord={session.presentation.stampAnimatingCoord}
+            rejectedCoord={session.presentation.rejectedCoord}
+            rejectedAssessment={session.presentation.rejectedAssessment}
+            rejectRunId={session.presentation.animationRunId}
+            hintedCellCoord={session.presentation.hintedCellCoord}
+            notes={playerNotes.notes}
+            actionsDisabled={session.actionsDisabled}
+            reducedMotion={effectiveReducedMotion}
+            onSelectCell={(coord) => session.selectCell(coord)}
+            onClosePanel={
+              session.selectedCell ? handleCloseInspector : undefined
+            }
+            registerFocusRef={registerFocusRef}
+          />
+        </InvestigationScene>
+      </main>
+
+      {/* Minimal Floating Top Pills */}
       <Header
         currentStage={gameState.current_stage}
         availableStages={gameState.available_stages}
         stageCatalog={gameState.stage_catalog}
         solvedCount={gameState.solved_count}
         totalCells={gameState.total_cells}
-        elapsedSeconds={elapsedSeconds}
-        darkMode={darkMode}
-        onStageChange={handleStageChange}
-        onPause={handlePause}
-        onRestart={handleRestart}
-        onHint={handleHint}
-        onAutoSolve={handleAutoSolve}
-        onStopAutoSolve={handleStopAutoSolve}
-        isAutoSolving={autoSolve.isRunning}
-        isStopping={autoSolve.isStopping}
-        actionsDisabled={actionsDisabled}
-        onToggleTheme={() => setDarkMode((current) => !current)}
+        elapsedSeconds={session.elapsedSeconds}
+        clueCount={gameState.active_clues.length}
+        newClueCount={session.presentation.newClueIds.length}
+        muted={settings.muted}
+        isPaused={session.isPaused}
+        actionsDisabled={session.actionsDisabled}
+        isAutoSolving={session.isAutoSolving}
+        isAutoSolveStopping={session.isAutoSolveStopping}
+        isStageLoading={session.isStageLoading}
+        isNotebookOpen={isNotebookOpen}
+        onStageChange={(stage) => void session.changeStage(stage)}
+        onToggleMute={() => updateSettings({ muted: !settings.muted })}
+        onPause={() => void session.pause()}
+        onOpenSettings={() => {
+          soundEngine.playPaperSelect();
+          setIsSettingsOpen(true);
+        }}
+        onToggleNotebook={() => {
+          soundEngine.playPaperSelect();
+          setIsNotebookOpen((open) => !open);
+        }}
       />
 
-      <Banner
-        message={banner.message}
-        type={banner.type}
-        onClose={() => setBanner({ message: null, type: null })}
-      />
-      {needsResync && (
-        <div className="border-b border-red-500/30 bg-red-950/50 px-5 py-2 flex items-center justify-between gap-3 text-xs text-red-200">
-          <span role="status">
-            {isResyncing ? "Refreshing game state…" : "Game state needs to be refreshed before continuing."}
-          </span>
-          <button
-            type="button"
-            onClick={() => void handleRetryStateSync()}
-            disabled={isResyncing}
-            className="rounded border border-red-300/40 px-3 py-1 font-semibold hover:bg-red-900/60 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isResyncing ? "Refreshing…" : "Retry state refresh"}
-          </button>
-        </div>
-      )}
+      {/* Quiet Floating Toast Capsule */}
+      <Banner {...bannerProps} />
 
-      <div className="flex-1 flex overflow-hidden">
-        <main className="flex-1 overflow-auto flex items-center justify-center p-4">
-          <Board
-            size={gameState.size}
-            cells={gameState.cells}
-            highlightedCoords={highlightedCoords}
-            darkMode={darkMode}
-            actionsDisabled={actionsDisabled}
-            onCardClick={(cell) => {
-              if (!controlsBlockedRef.current) setSelectedVerdictCell(cell);
-            }}
-            onClueClick={(cell) => {
-              if (cell.referenced_coords) setHighlightedCoords(cell.referenced_coords);
-            }}
-          />
-        </main>
-
-        <CaseEvidence
-          clues={gameState.active_clues}
-          logs={logs}
-          darkMode={darkMode}
-          highlightedCoords={highlightedCoords}
-          onHighlight={(coords) => setHighlightedCoords(coords)}
-          onClearHighlight={() => setHighlightedCoords([])}
-        />
-      </div>
-
-      <VerdictModal
-        cell={selectedVerdictCell}
-        darkMode={darkMode}
-        onSelectVerdict={handleSelectVerdict}
-        onClose={() => setSelectedVerdictCell(null)}
-      />
-
-      <PauseModal
-        isOpen={isPaused}
-        elapsedSeconds={elapsedSeconds}
-        darkMode={darkMode}
-        onResume={() => setIsPaused(false)}
-      />
-
-      <VictoryModal
-        isOpen={gameState.is_solved && !needsResync && !autoSolve.isRunning}
-        elapsedSeconds={elapsedSeconds}
-        solvedCount={gameState.solved_count}
-        darkMode={darkMode}
-        onRestart={handleRestart}
-        onNextStage={
-          gameState.available_stages.indexOf(gameState.current_stage) <
-          gameState.available_stages.length - 1
-            ? handleNextStage
-            : undefined
+      {/* Compact Floating Suspect Card (Left on Desktop, Sheet on Mobile/Tablet) */}
+      <SuspectInspector
+        cell={session.selectedCell}
+        note={
+          session.selectedCell
+            ? playerNotes.getNote(session.selectedCell.coord)
+            : null
         }
+        isPending={
+          Boolean(session.selectedCell) &&
+          session.pendingCoord === session.selectedCell?.coord
+        }
+        actionsDisabled={session.actionsDisabled}
+        isMobile={viewport.isMobile}
+        isTablet={viewport.isTablet}
+        rejectedAssessment={
+          Boolean(session.selectedCell) &&
+          session.presentation.rejectedCoord === session.selectedCell?.coord
+            ? session.presentation.rejectedAssessment
+            : null
+        }
+        rejectRunId={session.presentation.animationRunId}
+        isClueHighlighted={isSelectedCellClueHighlighted}
+        onSubmitVerdict={handleSubmitVerdict}
+        onHighlightClue={handleHighlightCellClue}
+        onUpdateNote={handleUpdateNote}
+        onClearNote={handleClearNote}
+        onClose={handleCloseInspector}
+      />
+
+      {/* Floating Right Clues Sheet */}
+      <EvidenceNotebook
+        clues={gameState.active_clues}
+        logs={session.logs}
+        selectedClueId={session.selectedClueId}
+        pinnedClueIds={session.pinnedClueIds}
+        newClueIds={session.presentation.newClueIds}
+        hintedClueIds={session.presentation.hintedClueIds}
+        lastMetrics={session.lastMetrics}
+        lastStep={session.lastStep}
+        hasClueFocus={hasClueFocus}
+        isMobile={viewport.isMobile}
+        isTablet={viewport.isTablet}
+        isOpen={isNotebookOpen}
+        onClose={() => setIsNotebookOpen(false)}
+        onSelectClue={session.selectClue}
+        onTogglePinClue={session.togglePinClue}
+        onClearFocus={() => {
+          soundEngine.playPaperSelect();
+          session.clearClueFocus();
+        }}
+      />
+
+      {/* Minimal Bottom-Center Action Capsule */}
+      <ActionDock
+        isSolved={gameState.is_solved}
+        isContradicted={gameState.is_contradicted}
+        actionsDisabled={session.actionsDisabled}
+        isHintPending={session.isHintPending}
+        isStepPending={session.isStepPending}
+        isAutoSolving={session.isAutoSolving}
+        isAutoSolveStopping={session.isAutoSolveStopping}
+        hasClueFocus={hasClueFocus}
+        onHint={session.handleHint}
+        onStepAi={session.stepAiOnce}
+        onStartAutoSolve={session.startAutoSolve}
+        onStopAutoSolve={session.stopAutoSolve}
+        onRestart={handleRequestRestart}
+        onClearClueFocus={() => {
+          soundEngine.playPaperSelect();
+          session.clearClueFocus();
+        }}
+      />
+
+      {/* Modals */}
+      <PauseModal
+        isOpen={session.isPaused}
+        elapsedSeconds={session.elapsedSeconds}
+        onResume={session.resume}
+      />
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        settings={settings}
+        osReducedMotion={osReducedMotion}
+        onUpdateSettings={updateSettings}
+        onResetSettings={resetSettings}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+
+      <RestartConfirmModal
+        isOpen={isRestartConfirmOpen}
+        noteCount={Object.keys(playerNotes.notes).length}
+        onRestartKeepNotes={() => {
+          setIsRestartConfirmOpen(false);
+          void session.restart();
+        }}
+        onRestartClearNotes={() => {
+          setIsRestartConfirmOpen(false);
+          playerNotes.clearPuzzleNotes();
+          soundEngine.playPencilTick();
+          void session.restart();
+        }}
+        onCancel={() => setIsRestartConfirmOpen(false)}
+      />
+
+      <CaseReportModal
+        isOpen={showCaseReport}
+        stageName={currentStageDisplayName}
+        solveModeUsed={session.solveModeUsed}
+        elapsedSeconds={session.elapsedSeconds}
+        solvedCount={gameState.solved_count}
+        totalCells={gameState.total_cells}
+        clueCount={gameState.active_clues.length}
+        lastMetrics={session.lastMetrics}
+        reducedMotion={effectiveReducedMotion}
+        onNextStage={
+          hasNextStage ? () => void session.nextStage() : undefined
+        }
+        onRestart={handleRequestRestart}
+        onClose={() => setCaseReportDismissed(true)}
       />
     </div>
   );

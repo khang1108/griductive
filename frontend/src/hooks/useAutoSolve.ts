@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { executeAutoSolveStep } from "../api/client";
-import type { GameState, StepResponse } from "../types";
+import type { AutoSolveSpeed, GameState, StepResponse } from "../types";
+
+export const AUTO_SOLVE_SPEED_DELAYS: Record<AutoSolveSpeed, number> = {
+  slow: 1200,
+  normal: 650,
+  fast: 280,
+};
 
 export interface UseAutoSolveOptions {
   getState: () => GameState | null;
@@ -18,7 +24,7 @@ export function useAutoSolve({
   getState,
   onStep,
   onError,
-  delayMs = 600,
+  delayMs = AUTO_SOLVE_SPEED_DELAYS.normal,
 }: UseAutoSolveOptions): {
   isRunning: boolean;
   isStopping: boolean;
@@ -71,7 +77,14 @@ export function useAutoSolve({
       try {
         while (isCurrent(generation) && !stopRequestedRef.current) {
           const state = optionsRef.current.getState();
-          if (!state || state.session_id !== sessionId || state.is_solved) break;
+          if (
+            !state ||
+            state.session_id !== sessionId ||
+            state.is_solved ||
+            state.is_contradicted
+          ) {
+            break;
+          }
           currentState = state;
 
           const response = await executeAutoSolveStep(
@@ -140,7 +153,12 @@ export function useAutoSolve({
     if (startLockRef.current || !mountedRef.current) return;
 
     const state = optionsRef.current.getState();
-    if (!state || !state.session_id || state.is_solved || state.is_contradicted) {
+    if (
+      !state ||
+      !state.session_id ||
+      state.is_solved ||
+      state.is_contradicted
+    ) {
       return;
     }
 

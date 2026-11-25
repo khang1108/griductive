@@ -67,3 +67,6 @@ venv/
 ENV/
 env/
 
+# Raw source model zip (extracted CC0 GLBs live in frontend/public/models/)
+docs/griductive_cc0_starter_models.zip
+

@@ -1,6 +1,8 @@
 import type {
   ActiveClue,
+  BannerType,
   CellData,
+  ClueDescriptor,
   GameState,
   HintOutcome,
   HintResponse,
@@ -10,6 +12,7 @@ import type {
   StageInfo,
   StepResponse,
   TraceStep,
+  VerdictAssessmentType,
   VerdictStatus,
 } from "../types";
 
@@ -17,11 +20,13 @@ const API_BASE = "";
 
 export class ApiError extends Error {
   readonly status: number;
+  readonly detail?: string;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, detail?: string) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.detail = detail;
   }
 }
 
@@ -33,6 +38,44 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function isVerdictStatus(value: unknown): value is VerdictStatus {
+  return value === "CRIMINAL" || value === "INNOCENT";
+}
+
+function isVerdictAssessmentType(value: unknown): value is VerdictAssessmentType {
+  return (
+    value === "PROVABLE" ||
+    value === "NOT_PROVABLE" ||
+    value === "CONTRADICTED" ||
+    value === "INCONSISTENT" ||
+    value === "ALREADY_SOLVED"
+  );
+}
+
+function isBannerType(value: unknown): value is BannerType {
+  return (
+    value === null ||
+    value === "success" ||
+    value === "warning" ||
+    value === "error" ||
+    value === "info"
+  );
+}
+
+function isClueDescriptor(value: unknown): value is ClueDescriptor {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value.kind === "string" &&
+    isStringArray(value.targets) &&
+    (value.target_status === null || isVerdictStatus(value.target_status)) &&
+    (value.region_kind === null || typeof value.region_kind === "string") &&
+    (value.region_label === null || typeof value.region_label === "string") &&
+    (value.region_params === null || isRecord(value.region_params)) &&
+    (value.k === null || typeof value.k === "number") &&
+    (value.parity === null || typeof value.parity === "string")
+  );
 }
 
 function isStageInfo(value: unknown): value is StageInfo {
@@ -48,6 +91,11 @@ function isStageInfo(value: unknown): value is StageInfo {
 
 function isCellData(value: unknown): value is CellData {
   if (!isRecord(value)) return false;
+  const hasValidDescriptor =
+    value.clue_descriptor === undefined ||
+    value.clue_descriptor === null ||
+    isClueDescriptor(value.clue_descriptor);
+
   return (
     typeof value.coord === "string" &&
     typeof value.row === "number" &&
@@ -59,12 +107,18 @@ function isCellData(value: unknown): value is CellData {
     (value.clue_text === null || typeof value.clue_text === "string") &&
     (value.clue_type === null || typeof value.clue_type === "string") &&
     isStringArray(value.referenced_coords) &&
-    typeof value.avatar_url === "string"
+    typeof value.avatar_url === "string" &&
+    hasValidDescriptor
   );
 }
 
 function isActiveClue(value: unknown): value is ActiveClue {
   if (!isRecord(value)) return false;
+  const hasValidDescriptor =
+    value.descriptor === undefined ||
+    value.descriptor === null ||
+    isClueDescriptor(value.descriptor);
+
   return (
     typeof value.clue_id === "string" &&
     typeof value.owner_coord === "string" &&
@@ -72,7 +126,8 @@ function isActiveClue(value: unknown): value is ActiveClue {
     typeof value.owner_avatar_url === "string" &&
     typeof value.type === "string" &&
     typeof value.text === "string" &&
-    isStringArray(value.referenced_coords)
+    isStringArray(value.referenced_coords) &&
+    hasValidDescriptor
   );
 }
 
@@ -81,11 +136,9 @@ function isGameState(value: unknown): value is GameState {
   const hasValidStageCatalog =
     value.stage_catalog === undefined ||
     (Array.isArray(value.stage_catalog) && value.stage_catalog.every(isStageInfo));
-  const hasValidBannerType =
-    value.banner_type === null ||
-    value.banner_type === "success" ||
-    value.banner_type === "error" ||
-    value.banner_type === "info";
+  const hasValidAssessment =
+    value.verdict_assessment === undefined ||
+    isVerdictAssessmentType(value.verdict_assessment);
 
   return (
     typeof value.session_id === "string" &&
@@ -99,18 +152,15 @@ function isGameState(value: unknown): value is GameState {
     typeof value.is_contradicted === "boolean" &&
     typeof value.revision === "number" &&
     (value.banner_message === null || typeof value.banner_message === "string") &&
-    hasValidBannerType &&
+    isBannerType(value.banner_type) &&
     Array.isArray(value.cells) &&
     value.cells.every(isCellData) &&
     Array.isArray(value.active_clues) &&
     value.active_clues.every(isActiveClue) &&
     (value.verdict_success === undefined || typeof value.verdict_success === "boolean") &&
-    (value.verdict_message === undefined || typeof value.verdict_message === "string")
+    (value.verdict_message === undefined || typeof value.verdict_message === "string") &&
+    hasValidAssessment
   );
-}
-
-function isVerdictStatus(value: unknown): value is VerdictStatus {
-  return value === "CRIMINAL" || value === "INNOCENT";
 }
 
 function isLogicOutcome(value: unknown): value is LogicOutcome {
@@ -208,6 +258,18 @@ function isLegacyAutoSolveResponse(
   );
 }
 
+async function extractErrorDetail(response: Response): Promise<string | undefined> {
+  try {
+    const body: unknown = await response.json();
+    if (isRecord(body) && typeof body.detail === "string") {
+      return body.detail;
+    }
+  } catch {
+    // Non-JSON error bodies are safe to ignore.
+  }
+  return undefined;
+}
+
 async function requestJson<T>(
   url: string,
   init: RequestInit,
@@ -216,10 +278,12 @@ async function requestJson<T>(
 ): Promise<T> {
   const response = await fetch(url, init);
   if (!response.ok) {
-    throw new ApiError(
-      response.status,
-      `${context} failed: ${response.statusText || `HTTP ${response.status}`}`
-    );
+    const detail = await extractErrorDetail(response);
+    const statusLabel = response.statusText || `HTTP ${response.status}`;
+    const message = detail
+      ? `${context} failed (${statusLabel}): ${detail}`
+      : `${context} failed: ${statusLabel}`;
+    throw new ApiError(response.status, message, detail);
   }
 
   const payload: unknown = await response.json();
@@ -235,14 +299,21 @@ export function fetchGameState(): Promise<GameState> {
 
 export function submitVerdict(
   coord: string,
-  status: VerdictStatus
+  status: VerdictStatus,
+  sessionId?: string,
+  expectedRevision?: number
 ): Promise<GameState> {
   return requestJson(
     `${API_BASE}/api/verdict`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ coord, status }),
+      body: JSON.stringify({
+        coord,
+        status,
+        session_id: sessionId,
+        expected_revision: expectedRevision,
+      }),
     },
     isGameState,
     "Submit verdict"

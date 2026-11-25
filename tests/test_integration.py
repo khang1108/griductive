@@ -7,11 +7,30 @@ import importlib
 import pytest
 from fastapi.testclient import TestClient
 
-from griductive.domain.clues import FactClue
-from griductive.domain.models import BoardLayout, Character, Status
+from griductive.domain.clues import (
+    AtLeastClue,
+    AtMostClue,
+    DifferentClue,
+    ExactlyClue,
+    FactClue,
+    ParityClue,
+    SameClue,
+)
+from griductive.domain.models import BoardLayout, CellId, Character, Parity, Status
+from griductive.domain.regions import (
+    ColumnRegion,
+    ExplicitRegion,
+    IntersectionRegion,
+    NeighborsRegion,
+    RowRegion,
+)
 from griductive.domain.state import PuzzleDefinition
 from griductive.engine.game_engine import GameEngine
 from griductive.engine.puzzle_db import load_puzzle_from_sqlite
+from griductive.server.serializers import (
+    serialize_clue_descriptor,
+    serialize_region_descriptor,
+)
 
 app_module = importlib.import_module("griductive.server.app")
 
@@ -90,13 +109,32 @@ def _install_inconsistent_engine() -> None:
     app_module.session.current_stage = puzzle.puzzle_id
 
 
+DESCRIPTOR_KEYS = {
+    "kind",
+    "targets",
+    "target_status",
+    "region_kind",
+    "region_label",
+    "region_params",
+    "k",
+    "parity",
+}
+
+
 def _assert_public_cells_do_not_leak_hidden_fields(state: dict) -> None:
     for cell in state["cells"]:
         if not cell["is_revealed"]:
             assert cell["status"] is None
             assert cell["clue_text"] is None
             assert cell["clue_type"] is None
+            assert cell["clue_descriptor"] is None
             assert cell["referenced_coords"] == []
+        else:
+            assert isinstance(cell["clue_descriptor"], dict)
+            assert set(cell["clue_descriptor"]) == DESCRIPTOR_KEYS
+    for clue in state["active_clues"]:
+        assert isinstance(clue["descriptor"], dict)
+        assert set(clue["descriptor"]) == DESCRIPTOR_KEYS
 
 
 def test_hint_returns_real_forced_move_without_mutating_snapshot(client: TestClient) -> None:
@@ -334,3 +372,249 @@ def test_legacy_full_run_preserves_inconsistent_http_error(client: TestClient) -
     assert response.status_code == 409
     assert response.json()["detail"] == "Current knowledge base is inconsistent (UNSAT)."
     assert client.get("/api/state").json() == before
+
+
+def test_verdict_rejects_lucky_guess_without_mutating_state(client: TestClient) -> None:
+    # In sample_3x3 at revision 0, only A1 is revealed ("B1 is CRIMINAL").
+    # C3's hidden status is CRIMINAL, so claiming C3=CRIMINAL matches the hidden answer
+    # but is NOT logically entailed by the public clues.
+    before = client.get("/api/state").json()
+
+    response = client.post(
+        "/api/verdict",
+        json={
+            "coord": "C3",
+            "status": "CRIMINAL",
+            "session_id": before["session_id"],
+            "expected_revision": before["revision"],
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["verdict_success"] is False
+    assert payload["verdict_assessment"] == "NOT_PROVABLE"
+    assert payload["banner_type"] == "warning"
+    assert "Not provable — current clues do not force" in payload["banner_message"]
+    assert "No guessing allowed." in payload["banner_message"]
+    assert payload["revision"] == before["revision"]
+    assert payload["solved_count"] == before["solved_count"]
+
+    c3_cell = next(cell for cell in payload["cells"] if cell["coord"] == "C3")
+    assert c3_cell["is_revealed"] is False
+    assert c3_cell["status"] is None
+    assert c3_cell["clue_descriptor"] is None
+    _assert_public_cells_do_not_leak_hidden_fields(payload)
+    assert client.get("/api/state").json() == before
+
+
+def test_verdict_rejects_contradicted_claim_without_mutating_state(client: TestClient) -> None:
+    # In sample_3x3 at revision 0, A1 states "B1 is CRIMINAL", so claiming B1=INNOCENT is disproved.
+    before = client.get("/api/state").json()
+
+    response = client.post(
+        "/api/verdict",
+        json={
+            "coord": "B1",
+            "status": "INNOCENT",
+            "session_id": before["session_id"],
+            "expected_revision": before["revision"],
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["verdict_success"] is False
+    assert payload["verdict_assessment"] == "CONTRADICTED"
+    assert payload["banner_type"] == "error"
+    assert "Contradicted — current clues disprove" in payload["banner_message"]
+    assert payload["revision"] == before["revision"]
+    assert payload["solved_count"] == before["solved_count"]
+
+    b1_cell = next(cell for cell in payload["cells"] if cell["coord"] == "B1")
+    assert b1_cell["is_revealed"] is False
+    assert b1_cell["clue_descriptor"] is None
+    _assert_public_cells_do_not_leak_hidden_fields(payload)
+    assert client.get("/api/state").json() == before
+
+
+def test_verdict_accepts_provable_move_and_reveals_clue_descriptor(client: TestClient) -> None:
+    before = client.get("/api/state").json()
+
+    response = client.post(
+        "/api/verdict",
+        json={
+            "coord": "B1",
+            "status": "CRIMINAL",
+            "session_id": before["session_id"],
+            "expected_revision": before["revision"],
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["verdict_success"] is True
+    assert payload["verdict_assessment"] == "PROVABLE"
+    assert payload["banner_type"] == "success"
+    assert payload["banner_message"] == "Proved! Binh (B1) is CRIMINAL."
+    assert payload["revision"] == before["revision"] + 1
+    assert payload["solved_count"] == before["solved_count"] + 1
+
+    b1_cell = next(cell for cell in payload["cells"] if cell["coord"] == "B1")
+    assert b1_cell["is_revealed"] is True
+    assert b1_cell["status"] == "CRIMINAL"
+    assert b1_cell["clue_descriptor"] == {
+        "kind": "FACT",
+        "targets": ["A2"],
+        "target_status": "CRIMINAL",
+        "region_kind": None,
+        "region_label": None,
+        "region_params": None,
+        "k": None,
+        "parity": None,
+    }
+    b1_clue = next(clue for clue in payload["active_clues"] if clue["owner_coord"] == "B1")
+    assert b1_clue["descriptor"] == b1_cell["clue_descriptor"]
+    _assert_public_cells_do_not_leak_hidden_fields(payload)
+
+
+def test_verdict_already_solved_and_inconsistent_outcomes(client: TestClient) -> None:
+    before = client.get("/api/state").json()
+
+    already = client.post("/api/verdict", json={"coord": "A1", "status": "INNOCENT"})
+    assert already.status_code == 200
+    already_payload = already.json()
+    assert already_payload["verdict_success"] is False
+    assert already_payload["verdict_assessment"] == "ALREADY_SOLVED"
+    assert already_payload["banner_type"] == "info"
+    assert already_payload["banner_message"] == "Ada (A1) is already confirmed."
+    assert already_payload["revision"] == before["revision"]
+    assert client.get("/api/state").json() == before
+
+    _install_inconsistent_engine()
+    inconsistent_before = client.get("/api/state").json()
+    inconsistent = client.post("/api/verdict", json={"coord": "B1", "status": "CRIMINAL"})
+    assert inconsistent.status_code == 200
+    inconsistent_payload = inconsistent.json()
+    assert inconsistent_payload["verdict_success"] is False
+    assert inconsistent_payload["verdict_assessment"] == "INCONSISTENT"
+    assert inconsistent_payload["banner_type"] == "error"
+    assert inconsistent_payload["banner_message"] == "Current public clues are inconsistent (UNSAT)."
+    assert client.get("/api/state").json() == inconsistent_before
+
+
+def test_verdict_rejects_stale_session_or_revision_with_409(client: TestClient) -> None:
+    before = client.get("/api/state").json()
+    token = {"session_id": before["session_id"], "expected_revision": before["revision"]}
+
+    first = client.post("/api/verdict", json={"coord": "B1", "status": "CRIMINAL", **token})
+    assert first.status_code == 200
+    committed = client.get("/api/state").json()
+    assert committed["revision"] == before["revision"] + 1
+
+    stale_rev = client.post("/api/verdict", json={"coord": "A2", "status": "CRIMINAL", **token})
+    assert stale_rev.status_code == 409
+    assert stale_rev.json()["detail"] == "Stale revision"
+    assert client.get("/api/state").json() == committed
+
+    restarted = client.post("/api/restart")
+    assert restarted.status_code == 200
+    after_restart = client.get("/api/state").json()
+
+    stale_session = client.post(
+        "/api/verdict",
+        json={
+            "coord": "B1",
+            "status": "CRIMINAL",
+            "session_id": before["session_id"],
+            "expected_revision": after_restart["revision"],
+        },
+    )
+    assert stale_session.status_code == 409
+    assert stale_session.json()["detail"] == "Stale session_id"
+    assert client.get("/api/state").json() == after_restart
+
+
+def test_verdict_rejects_out_of_bounds_and_invalid_revision_types(client: TestClient) -> None:
+    before = client.get("/api/state").json()
+
+    oob = client.post("/api/verdict", json={"coord": "D1", "status": "CRIMINAL"})
+    assert oob.status_code == 400
+
+    for bad_rev in (-1, "0", True):
+        invalid = client.post(
+            "/api/verdict",
+            json={
+                "coord": "B1",
+                "status": "CRIMINAL",
+                "session_id": before["session_id"],
+                "expected_revision": bad_rev,
+            },
+        )
+        assert invalid.status_code == 422
+
+    assert client.get("/api/state").json() == before
+
+
+def test_descriptors_cover_all_region_and_clue_types(client: TestClient) -> None:
+    a1, b1, b2, c3 = CellId(0, 0), CellId(0, 1), CellId(1, 1), CellId(2, 2)
+
+    assert serialize_region_descriptor(RowRegion(0)) == ("ROW", "Row 1", {"row": 0})
+    assert serialize_region_descriptor(ColumnRegion(1)) == ("COLUMN", "Col B", {"col": 1})
+    assert serialize_region_descriptor(NeighborsRegion(b2)) == (
+        "NEIGHBORS",
+        "Neighbors of B2",
+        {"center": "B2"},
+    )
+    assert serialize_region_descriptor(ExplicitRegion((a1, c3))) == (
+        "EXPLICIT",
+        "[A1, C3]",
+        {"cells": ["A1", "C3"]},
+    )
+    assert serialize_region_descriptor(IntersectionRegion(NeighborsRegion(b2), RowRegion(1))) == (
+        "INTERSECTION",
+        "Neighbors of B2 ∩ Row 2",
+        {
+            "left": {"kind": "NEIGHBORS", "label": "Neighbors of B2", "params": {"center": "B2"}},
+            "right": {"kind": "ROW", "label": "Row 2", "params": {"row": 1}},
+        },
+    )
+
+    descriptors = [
+        serialize_clue_descriptor(FactClue(clue_id="c1", owner=a1, target=b1, status=Status.CRIMINAL)),
+        serialize_clue_descriptor(SameClue(clue_id="c2", owner=a1, left=a1, right=b1)),
+        serialize_clue_descriptor(DifferentClue(clue_id="c3", owner=a1, left=a1, right=b1)),
+        serialize_clue_descriptor(ExactlyClue(clue_id="c4", owner=a1, region=RowRegion(0), k=2)),
+        serialize_clue_descriptor(AtLeastClue(clue_id="c5", owner=a1, region=ColumnRegion(2), k=1)),
+        serialize_clue_descriptor(AtMostClue(clue_id="c6", owner=a1, region=NeighborsRegion(b2), k=3)),
+        serialize_clue_descriptor(
+            ParityClue(
+                clue_id="c7",
+                owner=a1,
+                region=IntersectionRegion(RowRegion(1), ExplicitRegion((a1, b2))),
+                parity=Parity.ODD,
+            )
+        ),
+    ]
+    assert all(set(item) == DESCRIPTOR_KEYS for item in descriptors)
+    assert [item["kind"] for item in descriptors] == [
+        "FACT",
+        "SAME",
+        "DIFFERENT",
+        "EXACTLY",
+        "ATLEAST",
+        "ATMOST",
+        "PARITY",
+    ]
+    assert descriptors[0]["targets"] == ["B1"] and descriptors[0]["target_status"] == "CRIMINAL"
+    assert descriptors[1]["targets"] == ["A1", "B1"] and descriptors[1]["target_status"] is None
+    assert descriptors[2]["targets"] == ["A1", "B1"] and descriptors[2]["k"] is None
+    assert descriptors[3]["k"] == 2 and descriptors[3]["region_kind"] == "ROW"
+    assert descriptors[4]["k"] == 1 and descriptors[4]["region_kind"] == "COLUMN"
+    assert descriptors[5]["k"] == 3 and descriptors[5]["region_kind"] == "NEIGHBORS"
+    assert descriptors[6]["parity"] == "ODD" and descriptors[6]["region_kind"] == "INTERSECTION"
+
+    # End-to-end check on full solved sample_3x3 via HTTP
+    solved = client.post("/api/auto-solve")
+    assert solved.status_code == 200
+    _assert_public_cells_do_not_leak_hidden_fields(solved.json())

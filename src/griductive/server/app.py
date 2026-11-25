@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from griductive.domain.models import CellId, Status
+from griductive.domain.models import BoardLayout, CellId, Status
 from griductive.engine.game_engine import GameEngine
 from griductive.engine.puzzle_db import (
     list_puzzles_from_sqlite,
@@ -77,6 +77,8 @@ session = GameSession()
 class VerdictRequest(BaseModel):
     coord: str
     status: str
+    session_id: str | None = None
+    expected_revision: Annotated[int, Field(strict=True, ge=0)] | None = None
 
 
 class LoadRequest(BaseModel):
@@ -121,15 +123,41 @@ def submit_verdict(req: VerdictRequest) -> dict[str, Any]:
 
     with session.lock:
         assert session.engine is not None
-        ok, msg, _ = session.engine.submit_manual_verdict(cell, status)
+        if req.session_id is not None and req.session_id != session.engine.session_id:
+            raise HTTPException(status_code=409, detail="Stale session_id")
+        if req.expected_revision is not None and req.expected_revision != session.engine.revision:
+            raise HTTPException(status_code=409, detail="Stale revision")
+        if not BoardLayout(session.engine.size).contains(cell):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Coordinate {req.coord} is out of bounds for board size {session.engine.size}",
+            )
+
+        execution = session.logic_service.assess_and_commit_verdict(session.engine, cell, status)
         char_name = session.engine._puzzle.get_character(cell).name
 
-        if ok:
-            banner_msg = f"✓ Correct call! {char_name} is {status.value}."
-            banner_type = "success"
-        else:
-            banner_msg = f"✗ Cannot prove {char_name} is {status.value}. Deduction rejected."
-            banner_type = "error"
+        match execution.assessment:
+            case "PROVABLE":
+                banner_type = "success"
+                banner_msg = f"Proved! {char_name} ({cell.to_label()}) is {status.value}."
+            case "NOT_PROVABLE":
+                banner_type = "warning"
+                banner_msg = (
+                    f"Not provable — current clues do not force {char_name} ({cell.to_label()}) "
+                    f"to be {status.value}. No guessing allowed."
+                )
+            case "CONTRADICTED":
+                banner_type = "error"
+                banner_msg = (
+                    f"Contradicted — current clues disprove {char_name} ({cell.to_label()}) "
+                    f"being {status.value}."
+                )
+            case "ALREADY_SOLVED":
+                banner_type = "info"
+                banner_msg = f"{char_name} ({cell.to_label()}) is already confirmed."
+            case _:
+                banner_type = "error"
+                banner_msg = "Current public clues are inconsistent (UNSAT)."
 
         state_data = serialize_game_state(
             session.engine,
@@ -139,8 +167,9 @@ def submit_verdict(req: VerdictRequest) -> dict[str, Any]:
             banner_type=banner_type,
             stage_catalog=[dict(puzzle) for puzzle in session.stage_catalog],
         )
-        state_data["verdict_success"] = ok
-        state_data["verdict_message"] = msg
+        state_data["verdict_success"] = execution.ok
+        state_data["verdict_message"] = execution.reason
+        state_data["verdict_assessment"] = execution.assessment
         return state_data
 
 

@@ -1,4 +1,5 @@
 export * from "./PauseModal";
-export * from "./VerdictModal";
-export * from "./VictoryModal";
-
+export * from "./CaseReportModal";
+export * from "./SettingsModal";
+export * from "./RestartConfirmModal";
+export * from "./ModalFrame";
