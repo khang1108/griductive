@@ -1,17 +1,32 @@
 from __future__ import annotations
 
+import importlib
+
+import pytest
+
 from griductive.domain.clues import ExactlyClue, FactClue
 from griductive.domain.models import BoardLayout, CellId, Character, Status
 from griductive.domain.regions import RowRegion
 from griductive.domain.state import PuzzleDefinition
 from griductive.engine.game_engine import GameEngine
-from griductive.server.app import auto_solve, session
+
+app_module = importlib.import_module("griductive.server.app")
+
+
+@pytest.fixture(autouse=True)
+def isolated_session():
+    original_session = app_module.session
+    app_module.session = app_module.GameSession()
+    try:
+        yield app_module.session
+    finally:
+        app_module.session = original_session
 
 
 def test_auto_solve_uses_dpll_to_reveal_entailed_verdicts() -> None:
-    session.load_stage("daily_3x3_hard")
+    app_module.session.load_stage("daily_3x3_hard")
 
-    result = auto_solve()
+    result = app_module.auto_solve()
 
     assert result["status"] == "SOLVED"
     assert result["is_solved"]
@@ -39,9 +54,9 @@ def test_auto_solve_stops_when_no_verdict_is_forced() -> None:
         ),
         initial_revealed=frozenset({a1}),
     )
-    session.engine = GameEngine(ambiguous_puzzle)
+    app_module.session.engine = GameEngine(ambiguous_puzzle)
 
-    result = auto_solve()
+    result = app_module.auto_solve()
 
     assert result["status"] == "STALLED"
     assert not result["is_solved"]

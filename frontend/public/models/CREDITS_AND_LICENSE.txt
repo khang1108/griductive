@@ -1,0 +1,26 @@
+GRIDUCTIVE - CC0 STARTER MODELS
+
+Original assets: Poly Haven and the credited artists below.
+Assets licensed CC0 1.0 Universal: https://creativecommons.org/publicdomain/zero/1.0/
+Provider statement: https://polyhaven.com/license
+Poly Haven permits commercial use, modification and redistribution, without requiring attribution. Attribution is included here voluntarily.
+
+wooden_table_02
+Authors: Serhii Khromov
+Source: https://polyhaven.com/a/wooden_table_02
+
+desk_lamp_arm_01
+Authors: Kuutti Siitonen (modeling and texturing); Yann Kervran (rigging)
+Source: https://polyhaven.com/a/desk_lamp_arm_01
+
+binder_notebook
+Authors: DaDrood
+Source: https://polyhaven.com/a/binder_notebook
+
+stationery_supplies
+Authors: Mateusz Sadek
+Source: https://polyhaven.com/a/stationery_supplies
+
+Preparation: selected original 1K texture variants and repackaged glTF resources as self-contained GLB. No generative content, geometry redesign or texture retouching.
+Provenance: Poly Haven states it publishes human-made assets; this package preserves source links and authors.
+Metadata and downloads were retrieved from the Poly Haven API using the GriductiveAssetResearch identifier.

@@ -1,63 +1,78 @@
-import React from "react";
-import { Play } from "lucide-react";
+import React, { useId } from "react";
+import { Clock, Pause, Play, ShieldAlert } from "lucide-react";
+import { ModalFrame } from "./ModalFrame";
 
-interface PauseModalProps {
+export interface PauseModalProps {
   isOpen: boolean;
   elapsedSeconds: number;
-  darkMode: boolean;
   onResume: () => void;
+}
+
+function formatClock(secs: number): string {
+  const safe = Math.max(0, Math.floor(secs));
+  const m = Math.floor(safe / 60)
+    .toString()
+    .padStart(2, "0");
+  const s = (safe % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
 }
 
 export const PauseModal: React.FC<PauseModalProps> = ({
   isOpen,
   elapsedSeconds,
-  darkMode,
   onResume,
 }) => {
-  if (!isOpen) return null;
-
-  const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60)
-      .toString()
-      .padStart(2, "0");
-    const s = (secs % 60).toString().padStart(2, "0");
-    return `${m}:${s}`;
-  };
+  const titleId = useId();
+  const descId = useId();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div
-        className={`w-full max-w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center shadow-2xl transition-all ${
-          darkMode
-            ? "bg-[#241E1A] border-[#3A312B] text-[#F6EFE6]"
-            : "bg-[#FFFBF5] border-[#DDD0BF] text-[#1C1917]"
-        }`}
-      >
-        {/* Pause Icon */}
-        <div className="w-14 h-14 rounded-full border-2 border-current opacity-70 flex items-center justify-center mb-4">
-          <span className="font-mono text-2xl font-bold tracking-tighter">⏸</span>
+    <ModalFrame
+      isOpen={isOpen}
+      onClose={onResume}
+      labelledBy={titleId}
+      describedBy={descId}
+      closeOnBackdropClick={false}
+      containerClassName="w-full max-w-[390px]"
+    >
+      <div className="rounded-2xl border border-[#4A3B2F] bg-[#1D1814] text-[#F2E9D8] p-6 sm:p-7 flex flex-col items-center text-center lamp-panel-shadow">
+        <div className="w-12 h-12 rounded-full border border-[#E5BC74]/60 bg-[#2C241B] flex items-center justify-center mb-4">
+          <Pause className="w-5 h-5 text-[#E5BC74]" aria-hidden="true" />
         </div>
 
-        {/* Title */}
-        <h2 className="font-serif text-3xl font-bold tracking-tight mb-2">
-          Paused
+        <h2
+          id={titleId}
+          className="font-serif text-2xl font-bold tracking-tight text-[#F2E9D8]"
+        >
+          Investigation Paused
         </h2>
 
-        {/* Time Spent */}
-        <p className="text-xs opacity-75 mb-6">
-          You've spent <b className="font-mono">{formatTime(elapsedSeconds)}</b> on this grid. Take your time.
-        </p>
+        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#3A2E25] bg-[#16130F] font-mono text-sm font-bold text-[#E5BC74] tabular-nums">
+          <Clock className="w-4 h-4" aria-hidden="true" />
+          <span>Shift Timer: {formatClock(elapsedSeconds)}</span>
+        </div>
 
-        {/* Resume Button */}
-        <button
-          onClick={onResume}
-          className="w-full py-3 px-6 rounded-xl font-bold text-sm bg-[#E07A5F] hover:bg-[#F08C73] text-white flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 cursor-pointer"
+        <div
+          id={descId}
+          className="mt-4 rounded-xl border border-[#3A2E25] bg-[#241E18] px-3.5 py-2.5 text-xs leading-relaxed text-[#C5B69E] flex items-start gap-2 text-left"
         >
-          <Play className="w-4 h-4 fill-current" />
-          <span>Resume</span>
+          <ShieldAlert
+            className="w-4 h-4 text-[#E5BC74] shrink-0 mt-0.5"
+            aria-hidden="true"
+          />
+          <span>
+            Any verdict or AI request already sent to the server will complete safely.
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={onResume}
+          className="mt-6 w-full inline-flex items-center justify-center gap-2 min-h-[44px] px-5 rounded-xl bg-[#E5BC74] hover:bg-[#EECA8A] text-[#171512] text-sm font-bold transition-colors cursor-pointer"
+        >
+          <Play className="w-4 h-4 fill-current" aria-hidden="true" />
+          <span>Resume Shift</span>
         </button>
       </div>
-    </div>
+    </ModalFrame>
   );
 };
-

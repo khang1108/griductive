@@ -1,0 +1,25 @@
+{
+  "verified_on": "2026-11-25",
+  "result": "PASS",
+  "checks": [
+    "source MD5 and size",
+    "GLB header and chunk lengths/alignment",
+    "bufferView and accessor bounds",
+    "position min/max against actual vertices",
+    "index bounds against vertex count",
+    "node and material/texture references",
+    "preservation of source geometry and image bytes",
+    "all 12 embedded images decoded by Pillow",
+    "SHA-256 matches asset_manifest.json"
+  ],
+  "external_resources": 0,
+  "embedded_images": 12,
+  "image_dimensions": "1024x1024 RGB JPEG for all images",
+  "animation_clips": 0,
+  "skins": 0,
+  "limits": [
+    "No visual rendering in Griductive",
+    "No device FPS benchmark",
+    "No articulated rig in the downloaded lamp glTF export"
+  ]
+}
