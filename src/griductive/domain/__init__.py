@@ -5,9 +5,13 @@ from griductive.domain.clues import (
     AtMostClue,
     Clue,
     ClueBase,
+    CompareClue,
+    CompoundClue,
+    ConnectedClue,
     DifferentClue,
     ExactlyClue,
     FactClue,
+    FlavorClue,
     ParityClue,
     SameClue,
 )
@@ -17,6 +21,7 @@ from griductive.domain.models import (
     CellId,
     Character,
     Classification,
+    CompareOp,
     Parity,
     Status,
 )
@@ -40,6 +45,7 @@ __all__ = [
     # Models & enums
     "Status",
     "Classification",
+    "CompareOp",
     "Parity",
     "CellId",
     "Character",
@@ -61,6 +67,10 @@ __all__ = [
     "AtLeastClue",
     "AtMostClue",
     "ParityClue",
+    "CompareClue",
+    "ConnectedClue",
+    "CompoundClue",
+    "FlavorClue",
     "Clue",
     # Evaluator
     "ClueEvaluator",

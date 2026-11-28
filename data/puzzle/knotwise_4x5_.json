@@ -1,0 +1,470 @@
+{
+  "puzzle_id": "knotwise_4x5_",
+  "name": "4×5 Knotwise 02",
+  "size": 5,
+  "rows": 5,
+  "cols": 4,
+  "difficulty": "normal",
+  "initial_revealed": [
+    "B1"
+  ],
+  "grid": [
+    {
+      "cell": "A1",
+      "name": "Anya",
+      "profession": "Chef",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 7,
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "A1",
+            "B1",
+            "C1",
+            "D1",
+            "A2",
+            "B2",
+            "C2",
+            "D2",
+            "A3",
+            "B3",
+            "C3",
+            "D3",
+            "A4",
+            "B4",
+            "C4",
+            "D4",
+            "A5",
+            "B5",
+            "C5",
+            "D5"
+          ]
+        }
+      },
+      "status": "INNOCENT"
+    },
+    {
+      "cell": "B1",
+      "name": "Brian",
+      "profession": "Sorter",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 0,
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "EXPLICIT",
+            "cells": [
+              "B3",
+              "C3",
+              "D3"
+            ]
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "B4"
+          }
+        }
+      },
+      "status": "INNOCENT"
+    },
+    {
+      "cell": "C1",
+      "name": "Cara",
+      "profession": "Fitter",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 3,
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "C1"
+        }
+      },
+      "status": "CRIMINAL"
+    },
+    {
+      "cell": "D1",
+      "name": "Derek",
+      "profession": "Designer",
+      "clue": {
+        "type": "COMPOUND",
+        "text": "There are more innocents among clerks than any other profession.",
+        "clues": [
+          {
+            "type": "COMPARE",
+            "op": "MORE",
+            "target_status": "INNOCENT",
+            "left_region": {
+              "type": "EXPLICIT",
+              "cells": [
+                "C3",
+                "D4",
+                "B5",
+                "D5"
+              ]
+            },
+            "right_region": {
+              "type": "EXPLICIT",
+              "cells": [
+                "A1",
+                "B2",
+                "B3"
+              ]
+            }
+          },
+          {
+            "type": "COMPARE",
+            "op": "MORE",
+            "target_status": "INNOCENT",
+            "left_region": {
+              "type": "EXPLICIT",
+              "cells": [
+                "C3",
+                "D4",
+                "B5",
+                "D5"
+              ]
+            },
+            "right_region": {
+              "type": "EXPLICIT",
+              "cells": [
+                "B1",
+                "A3",
+                "D3"
+              ]
+            }
+          },
+          {
+            "type": "COMPARE",
+            "op": "MORE",
+            "target_status": "INNOCENT",
+            "left_region": {
+              "type": "EXPLICIT",
+              "cells": [
+                "C3",
+                "D4",
+                "B5",
+                "D5"
+              ]
+            },
+            "right_region": {
+              "type": "EXPLICIT",
+              "cells": [
+                "C1",
+                "A5"
+              ]
+            }
+          },
+          {
+            "type": "COMPARE",
+            "op": "MORE",
+            "target_status": "INNOCENT",
+            "left_region": {
+              "type": "EXPLICIT",
+              "cells": [
+                "C3",
+                "D4",
+                "B5",
+                "D5"
+              ]
+            },
+            "right_region": {
+              "type": "EXPLICIT",
+              "cells": [
+                "D1",
+                "A2"
+              ]
+            }
+          },
+          {
+            "type": "COMPARE",
+            "op": "MORE",
+            "target_status": "INNOCENT",
+            "left_region": {
+              "type": "EXPLICIT",
+              "cells": [
+                "C3",
+                "D4",
+                "B5",
+                "D5"
+              ]
+            },
+            "right_region": {
+              "type": "EXPLICIT",
+              "cells": [
+                "C2",
+                "B4",
+                "C4"
+              ]
+            }
+          },
+          {
+            "type": "COMPARE",
+            "op": "MORE",
+            "target_status": "INNOCENT",
+            "left_region": {
+              "type": "EXPLICIT",
+              "cells": [
+                "C3",
+                "D4",
+                "B5",
+                "D5"
+              ]
+            },
+            "right_region": {
+              "type": "EXPLICIT",
+              "cells": [
+                "D2",
+                "A4",
+                "C5"
+              ]
+            }
+          }
+        ]
+      },
+      "status": "INNOCENT"
+    },
+    {
+      "cell": "A2",
+      "name": "Emma",
+      "profession": "Designer",
+      "clue": {
+        "type": "FLAVOR",
+        "text": "I designed shoebox wrappers. We may have made the problem worse."
+      },
+      "status": "INNOCENT"
+    },
+    {
+      "cell": "B2",
+      "name": "Fern",
+      "profession": "Chef",
+      "clue": {
+        "type": "FLAVOR",
+        "text": "The chocolate shoes have a lovely finish and no sensible walking life."
+      },
+      "status": "CRIMINAL"
+    },
+    {
+      "cell": "C2",
+      "name": "Gina",
+      "profession": "Host",
+      "clue": {
+        "type": "FLAVOR",
+        "text": "Please try a sample, rather than trying it on."
+      },
+      "status": "CRIMINAL"
+    },
+    {
+      "cell": "D2",
+      "name": "Hugo",
+      "profession": "Driver",
+      "clue": {
+        "type": "COMPOUND",
+        "text": "Only 1 of the 4 innocents neighboring Emma is Brian's neighbor.",
+        "clues": [
+          {
+            "type": "EXACTLY",
+            "k": 1,
+            "region": {
+              "type": "NEIGHBORS",
+              "center": "A2"
+            }
+          },
+          {
+            "type": "EXACTLY",
+            "k": 1,
+            "region": {
+              "type": "INTERSECTION",
+              "left": {
+                "type": "NEIGHBORS",
+                "center": "A2"
+              },
+              "right": {
+                "type": "NEIGHBORS",
+                "center": "B1"
+              }
+            }
+          }
+        ]
+      },
+      "status": "CRIMINAL"
+    },
+    {
+      "cell": "A3",
+      "name": "Iris",
+      "profession": "Sorter",
+      "clue": {
+        "type": "COMPOUND",
+        "text": "Both innocents in column C are connected.",
+        "clues": [
+          {
+            "type": "EXACTLY",
+            "k": 3,
+            "region": {
+              "type": "COLUMN",
+              "col": 2
+            }
+          },
+          {
+            "type": "CONNECTED",
+            "target_status": "INNOCENT",
+            "region": {
+              "type": "COLUMN",
+              "col": 2
+            }
+          }
+        ]
+      },
+      "status": "INNOCENT"
+    },
+    {
+      "cell": "B3",
+      "name": "Jonas",
+      "profession": "Chef",
+      "clue": {
+        "type": "COMPOUND",
+        "text": "Hugo is one of Gina's 3 criminal neighbors.",
+        "clues": [
+          {
+            "type": "FACT",
+            "target": "D2",
+            "status": "CRIMINAL"
+          },
+          {
+            "type": "EXACTLY",
+            "k": 3,
+            "region": {
+              "type": "NEIGHBORS",
+              "center": "C2"
+            }
+          }
+        ]
+      },
+      "status": "INNOCENT"
+    },
+    {
+      "cell": "C3",
+      "name": "Kate",
+      "profession": "Clerk",
+      "clue": {
+        "type": "FLAVOR",
+        "text": "The order says 'comfortable.' Is that a cocoa percentage?"
+      },
+      "status": "INNOCENT"
+    },
+    {
+      "cell": "D3",
+      "name": "Leo",
+      "profession": "Sorter",
+      "clue": {
+        "type": "FLAVOR",
+        "text": "I chose rich cocoa. It is more useful here than rich leather."
+      },
+      "status": "INNOCENT"
+    },
+    {
+      "cell": "A4",
+      "name": "Mara",
+      "profession": "Driver",
+      "clue": {
+        "type": "FLAVOR",
+        "text": "The delivery address is a shoe shop. I have called ahead."
+      },
+      "status": "CRIMINAL"
+    },
+    {
+      "cell": "B4",
+      "name": "Nina",
+      "profession": "Host",
+      "clue": {
+        "type": "CONNECTED",
+        "target_status": "CRIMINAL",
+        "text": "All criminals in row 2 are connected.",
+        "region": {
+          "type": "ROW",
+          "row": 1
+        }
+      },
+      "status": "INNOCENT"
+    },
+    {
+      "cell": "C4",
+      "name": "Owen",
+      "profession": "Host",
+      "clue": {
+        "type": "COMPARE",
+        "op": "EQUAL",
+        "target_status": "CRIMINAL",
+        "text": "Tara and I have an equal number of criminal neighbors.",
+        "left_region": {
+          "type": "NEIGHBORS",
+          "center": "D5"
+        },
+        "right_region": {
+          "type": "NEIGHBORS",
+          "center": "C4"
+        }
+      },
+      "status": "INNOCENT"
+    },
+    {
+      "cell": "D4",
+      "name": "Piper",
+      "profession": "Clerk",
+      "clue": {
+        "type": "PARITY",
+        "parity": "ODD",
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "A5"
+        }
+      },
+      "status": "INNOCENT"
+    },
+    {
+      "cell": "A5",
+      "name": "Queenie",
+      "profession": "Fitter",
+      "clue": {
+        "type": "FLAVOR",
+        "text": "The mould makes beautiful heels. They melt at an inconvenient temperature."
+      },
+      "status": "CRIMINAL"
+    },
+    {
+      "cell": "B5",
+      "name": "Ruby",
+      "profession": "Clerk",
+      "clue": {
+        "type": "FLAVOR",
+        "text": "Would you like dark chocolate, milk chocolate, or a larger size of box?"
+      },
+      "status": "INNOCENT"
+    },
+    {
+      "cell": "C5",
+      "name": "Sam",
+      "profession": "Driver",
+      "clue": {
+        "type": "FLAVOR",
+        "text": "I transported the shoes in a cool van. They arrived without blisters."
+      },
+      "status": "CRIMINAL"
+    },
+    {
+      "cell": "D5",
+      "name": "Tara",
+      "profession": "Clerk",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 3,
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "B3"
+        }
+      },
+      "status": "INNOCENT"
+    }
+  ]
+}

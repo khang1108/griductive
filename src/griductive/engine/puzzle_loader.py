@@ -8,13 +8,17 @@ from griductive.domain.clues import (
     AtLeastClue,
     AtMostClue,
     Clue,
+    CompareClue,
+    CompoundClue,
+    ConnectedClue,
     DifferentClue,
     ExactlyClue,
     FactClue,
+    FlavorClue,
     ParityClue,
     SameClue,
 )
-from griductive.domain.models import BoardLayout, CellId, Character, Parity, Status
+from griductive.domain.models import BoardLayout, CellId, Character, CompareOp, Parity, Status
 from griductive.domain.regions import (
     ColumnRegion,
     ExplicitRegion,
@@ -98,6 +102,41 @@ def _parse_clue(data: dict[str, Any], clue_id: str, owner: CellId) -> Clue:
                 region=_parse_region(data["region"]),
                 parity=Parity(data["parity"].upper()),
             )
+        case "COMPARE":
+            return CompareClue(
+                clue_id=clue_id,
+                owner=owner,
+                left_region=_parse_region(data["left_region"]),
+                right_region=_parse_region(data["right_region"]),
+                op=CompareOp(data["op"].upper()),
+                target_status=Status(data.get("target_status", "CRIMINAL").upper()),
+                text=data.get("text"),
+            )
+        case "CONNECTED":
+            return ConnectedClue(
+                clue_id=clue_id,
+                owner=owner,
+                region=_parse_region(data["region"]),
+                target_status=Status(data.get("target_status", "CRIMINAL").upper()),
+                text=data.get("text"),
+            )
+        case "COMPOUND":
+            sub_clues = tuple(
+                _parse_clue(sub, clue_id=f"{clue_id}_{i}", owner=owner)
+                for i, sub in enumerate(data["clues"])
+            )
+            return CompoundClue(
+                clue_id=clue_id,
+                owner=owner,
+                clues=sub_clues,
+                text=data.get("text"),
+            )
+        case "FLAVOR":
+            return FlavorClue(
+                clue_id=clue_id,
+                owner=owner,
+                text=str(data["text"]),
+            )
         case _:
             raise ValueError(f"Unknown clue type in JSON: {clue_type}")
 
@@ -105,8 +144,9 @@ def _parse_clue(data: dict[str, Any], clue_id: str, owner: CellId) -> Clue:
 def load_puzzle_from_dict(data: dict[str, Any]) -> PuzzleDefinition:
     """Construct a PuzzleDefinition from a JSON-compatible dictionary."""
     puzzle_id = data["puzzle_id"]
-    size = int(data["size"])
-    layout = BoardLayout(size)
+    rows = int(data.get("rows", data["size"]))
+    cols = int(data.get("cols", rows))
+    layout = BoardLayout(rows, cols=cols)
     all_cells = layout.all_cells()
 
     initial_revealed = frozenset(
@@ -140,11 +180,12 @@ def load_puzzle_from_dict(data: dict[str, Any]) -> PuzzleDefinition:
 
     return PuzzleDefinition(
         puzzle_id=puzzle_id,
-        size=size,
+        size=rows,
         characters=tuple(characters),
         hidden_statuses=tuple(statuses),
         clues=tuple(clues),
         initial_revealed=initial_revealed,
+        cols=cols,
     )
 
 

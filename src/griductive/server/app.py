@@ -127,10 +127,10 @@ def submit_verdict(req: VerdictRequest) -> dict[str, Any]:
             raise HTTPException(status_code=409, detail="Stale session_id")
         if req.expected_revision is not None and req.expected_revision != session.engine.revision:
             raise HTTPException(status_code=409, detail="Stale revision")
-        if not BoardLayout(session.engine.size).contains(cell):
+        if not BoardLayout(session.engine.size, cols=session.engine.cols).contains(cell):
             raise HTTPException(
                 status_code=400,
-                detail=f"Coordinate {req.coord} is out of bounds for board size {session.engine.size}",
+                detail=f"Coordinate {req.coord} is out of bounds for board size {session.engine.cols}×{session.engine.size}",
             )
 
         execution = session.logic_service.assess_and_commit_verdict(session.engine, cell, status)
@@ -201,7 +201,7 @@ def load_stage(req: LoadRequest) -> dict[str, Any]:
             session.engine,
             session.current_stage,
             list(session.available_stages),
-            banner_message=f"Loaded case {session.current_stage} ({session.engine.size}×{session.engine.size}).",
+            banner_message=f"Loaded case {session.current_stage} ({session.engine.cols}×{session.engine.size}).",
             banner_type="info",
             stage_catalog=[dict(puzzle) for puzzle in session.stage_catalog],
         )

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 from pathlib import Path
+import zlib
 from PIL import Image
 
 NAMES_ORDER = (
@@ -38,7 +39,13 @@ def get_avatar_png(name_or_index: str | int, size: int = 140) -> bytes:
     if isinstance(name_or_index, int):
         idx = max(0, min(name_or_index, 24))
     elif isinstance(name_or_index, str):
-        idx = NAME_TO_INDEX.get(name_or_index.strip().lower(), 0)
+        clean = name_or_index.strip().lower()
+        if clean.isdigit():
+            idx = int(clean) % 25
+        elif clean in NAME_TO_INDEX:
+            idx = NAME_TO_INDEX[clean]
+        else:
+            idx = zlib.crc32(clean.encode("utf-8")) % 25
 
     c = idx % 5
     r = idx // 5

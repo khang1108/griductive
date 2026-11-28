@@ -55,14 +55,14 @@ def resolve_region(region: RegionSpec, layout: BoardLayout) -> tuple[CellId, ...
     """Resolve a RegionSpec into a deterministic, sorted, deduplicated tuple of valid CellIds in row-major order."""
     match region:
         case RowRegion(row):
-            if not (0 <= row < layout.size):
-                raise ValueError(f"Row {row} is out of bounds for board size {layout.size}")
-            return tuple(CellId(row, c) for c in range(layout.size))
+            if not (0 <= row < layout.rows):
+                raise ValueError(f"Row {row} is out of bounds for board rows {layout.rows}")
+            return tuple(CellId(row, c) for c in range(layout.num_cols))
 
         case ColumnRegion(col):
-            if not (0 <= col < layout.size):
-                raise ValueError(f"Column {col} is out of bounds for board size {layout.size}")
-            return tuple(CellId(r, col) for r in range(layout.size))
+            if not (0 <= col < layout.num_cols):
+                raise ValueError(f"Column {col} is out of bounds for board cols {layout.num_cols}")
+            return tuple(CellId(r, col) for r in range(layout.rows))
 
         case NeighborsRegion(center):
             if not layout.contains(center):

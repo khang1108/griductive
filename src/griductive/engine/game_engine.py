@@ -61,6 +61,10 @@ class GameEngine:
     def size(self) -> int:
         return self._puzzle.size
 
+    @property
+    def cols(self) -> int:
+        return self._puzzle.num_cols
+
     def get_public_state(self) -> PublicState:
         """Expose current public knowledge state snapshot."""
         return self._build_public_state()
@@ -74,8 +78,7 @@ class GameEngine:
 
     def is_solved(self) -> bool:
         """Check whether all cells have been revealed."""
-        total_cells = self._puzzle.size * self._puzzle.size
-        return len(self._revealed_cells) == total_cells
+        return len(self._revealed_cells) == self._puzzle.total_cells
 
     def commit_verified_verdict(self, verified: VerifiedVerdict) -> RevealResult:
         """Commit an entailed verdict and reveal the card.
@@ -154,7 +157,7 @@ class GameEngine:
 
 
     def _build_public_state(self) -> PublicState:
-        layout = BoardLayout(self._puzzle.size)
+        layout = self._puzzle.layout
         public_cells: list[PublicCell] = []
 
         for cell in layout.all_cells():
@@ -183,5 +186,6 @@ class GameEngine:
             revision=self._revision,
             size=self._puzzle.size,
             cells=tuple(public_cells),
+            cols=self._puzzle.num_cols,
         )
 

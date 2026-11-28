@@ -50,10 +50,11 @@ def save_puzzle_to_sqlite(
     if not puzzle_id:
         raise ValueError("puzzle_data missing required 'puzzle_id'")
 
-    size = int(puzzle_data.get("size", 3))
+    size = int(puzzle_data.get("rows", puzzle_data.get("size", 3)))
+    cols = int(puzzle_data.get("cols", size))
     initial_revealed = json.dumps(puzzle_data.get("initial_revealed", []))
     data_json = json.dumps(puzzle_data)
-    display_name = name or puzzle_data.get("name") or f"{size}×{size} Daily Mystery"
+    display_name = name or puzzle_data.get("name") or f"{cols}×{size} Daily Mystery"
 
     with get_connection(db_path) as conn:
         conn.execute(
@@ -77,18 +78,23 @@ def list_puzzles_from_sqlite(db_path: Path | str | None = None) -> list[dict[str
     init_db(db_path)
     with get_connection(db_path) as conn:
         rows = conn.execute(
-            "SELECT puzzle_id, name, size, difficulty, initial_revealed FROM puzzles ORDER BY size ASC, puzzle_id ASC"
+            "SELECT puzzle_id, name, size, difficulty, initial_revealed, data_json FROM puzzles ORDER BY size ASC, puzzle_id ASC"
         ).fetchall()
-        return [
-            {
+        result = []
+        for row in rows:
+            raw = json.loads(row["data_json"])
+            r_count = int(raw.get("rows", row["size"]))
+            c_count = int(raw.get("cols", r_count))
+            result.append({
                 "puzzle_id": row["puzzle_id"],
                 "name": row["name"],
                 "size": row["size"],
+                "rows": r_count,
+                "cols": c_count,
                 "difficulty": row["difficulty"],
                 "initial_revealed": json.loads(row["initial_revealed"]),
-            }
-            for row in rows
-        ]
+            })
+        return result
 
 
 def load_puzzle_from_sqlite(
@@ -127,7 +133,12 @@ def seed_database_from_json_dir(json_dir: Path | str, db_path: Path | str | None
                 data = json.load(f)
             pid = data.get("puzzle_id") or json_file.stem
             data["puzzle_id"] = pid
-            save_puzzle_to_sqlite(data, db_path=db_path)
+            save_puzzle_to_sqlite(
+                data,
+                name=data.get("name"),
+                difficulty=data.get("difficulty", "normal"),
+                db_path=db_path,
+            )
             count += 1
         except Exception as e:
             print(f"[puzzle_db] Error importing {json_file}: {e}")

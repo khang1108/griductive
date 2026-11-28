@@ -1,0 +1,169 @@
+{
+  "puzzle_id": "cbs_3x3_parity_web",
+  "name": "3×3 Parity & Twin Clues",
+  "size": 3,
+  "difficulty": "hard",
+  "initial_revealed": [
+    "B1",
+    "A2"
+  ],
+  "grid": [
+    {
+      "cell": "A1",
+      "name": "Ada",
+      "profession": "Architect",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "NEIGHBORS",
+            "center": "B2"
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "A3"
+          }
+        }
+      }
+    },
+    {
+      "cell": "B1",
+      "name": "Binh",
+      "profession": "Botanist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "PARITY",
+        "parity": "ODD",
+        "region": {
+          "type": "EXPLICIT",
+          "cells": [
+            "A1",
+            "B1",
+            "C1",
+            "A2",
+            "C2",
+            "A3",
+            "B3",
+            "C3"
+          ]
+        }
+      }
+    },
+    {
+      "cell": "C1",
+      "name": "Chi",
+      "profession": "Chef",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "PARITY",
+        "parity": "ODD",
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "ROW",
+            "row": 2
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "A2"
+          }
+        }
+      }
+    },
+    {
+      "cell": "A2",
+      "name": "Duy",
+      "profession": "Doctor",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "SAME",
+        "left": "A1",
+        "right": "B1"
+      }
+    },
+    {
+      "cell": "B2",
+      "name": "Emi",
+      "profession": "Engineer",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "PARITY",
+        "parity": "ODD",
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "ROW",
+            "row": 2
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "B2"
+          }
+        }
+      }
+    },
+    {
+      "cell": "C2",
+      "name": "Finn",
+      "profession": "Forensic Artist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "COLUMN",
+            "col": 0
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "B3"
+          }
+        }
+      }
+    },
+    {
+      "cell": "A3",
+      "name": "Gia",
+      "profession": "Geologist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "PARITY",
+        "parity": "ODD",
+        "region": {
+          "type": "ROW",
+          "row": 2
+        }
+      }
+    },
+    {
+      "cell": "B3",
+      "name": "Hana",
+      "profession": "Historian",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "C1"
+        }
+      }
+    },
+    {
+      "cell": "C3",
+      "name": "Ivy",
+      "profession": "Illustrator",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "A2",
+        "right": "C3"
+      }
+    }
+  ]
+}

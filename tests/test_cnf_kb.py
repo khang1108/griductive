@@ -252,8 +252,8 @@ def test_every_board_size_fully_revealed(size: int) -> None:
 PUZZLE_IDS = [p["puzzle_id"] for p in list_puzzles_from_sqlite()]
 
 
-def test_database_has_14_puzzles() -> None:
-    assert len(PUZZLE_IDS) == 14
+def test_database_has_expected_puzzles() -> None:
+    assert len(PUZZLE_IDS) == 26
 
 
 @pytest.mark.parametrize("puzzle_id", PUZZLE_IDS)
@@ -262,7 +262,7 @@ def test_real_puzzle_ground_truth_satisfies_kb_at_every_step(puzzle_id: str) -> 
     puzzle = load_puzzle_from_sqlite(puzzle_id)
     engine = GameEngine(puzzle)
     solution = puzzle.full_solution()
-    truth = {c.to_var(puzzle.size): s.is_criminal for c, s in solution.items()}
+    truth = {c.to_var(puzzle.size, cols=puzzle.num_cols): s.is_criminal for c, s in solution.items()}
 
     state = engine.get_public_state()
     assert satisfied_by(ENC.encode_knowledge_base(state).clauses, truth)

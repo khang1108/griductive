@@ -359,16 +359,16 @@ def _run_cli(*args: str, timeout: int = 60) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_default_selector_returns_all_fourteen_puzzles_by_size() -> None:
+def test_default_selector_returns_all_puzzles_by_size() -> None:
     cli = _load_cli_module()
 
     selected = cli._select_puzzles(list_puzzles_from_sqlite(), size=None, puzzle_ids=None)
 
-    assert len(selected) == 14
+    assert len(selected) == 26
     assert {size: sum(row["size"] == size for row in selected) for size in (3, 4, 5)} == {
-        3: 6,
-        4: 5,
-        5: 3,
+        3: 10,
+        4: 8,
+        5: 8,
     }
 
 
@@ -416,7 +416,7 @@ def test_cli_invalid_selection_or_numeric_arguments_exit_two(
     assert completed.stderr
 
 
-def test_cli_size_five_selects_three_and_keeps_going_after_timeouts(
+def test_cli_size_five_selects_all_and_keeps_going_after_timeouts(
     tmp_path: Path,
 ) -> None:
     output_dir = tmp_path / "timed-out-run"
@@ -433,7 +433,7 @@ def test_cli_size_five_selects_three_and_keeps_going_after_timeouts(
     assert completed.returncode == 1
     with (output_dir / "benchmark_results.csv").open(encoding="utf-8", newline="") as stream:
         records = list(csv.DictReader(stream))
-    assert len(records) == 3
+    assert len(records) == 8
     assert {record["outcome"] for record in records} == {"TIMEOUT"}
     assert all(record["runtime_ms"] == "" and record["solved_count"] == "" for record in records)
 
