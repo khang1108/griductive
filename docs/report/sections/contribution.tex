@@ -1,50 +1,134 @@
-\section{Quản trị đồ án và phụ lục}
+\section{Quản lý đồ án và phụ lục}
 \label{sec:contribution}
 
 \subsection{Kế hoạch triển khai}
-Để bảo đảm tiến độ đồng đều và loại bỏ tình trạng chờ đợi dây chuyền giữa bốn thành viên trong nhóm, dự án được tổ chức theo phương pháp luận thiết kế hợp đồng giao diện trước khi hiện thực chi tiết, chia làm ba giai đoạn nối tiếp nhau rõ ràng. Trong giai đoạn khởi đầu, toàn nhóm cùng phân tích đặc tả bài toán, thống nhất hệ thống khái niệm miền cốt lõi, quy ước định dạng mệnh đề số nguyên và ranh giới truyền nhận dữ liệu bất biến giữa bộ quản trị trò chơi với tác tử suy diễn. Nhờ bộ khung giao tiếp chuẩn hóa này, sang giai đoạn phát triển trọng tâm, cả bốn phân hệ lớn --- bao gồm môi trường quản trị trạng thái ẩn kèm bộ mã hóa CNF, bộ giải thỏa mãn mệnh đề DPLL tự cài đặt, tác tử suy diễn phản chứng kèm bộ nhớ đệm chứng nhân, và tầng điều phối dịch vụ trực tuyến kèm bộ khung đo chuẩn cô lập tiến trình --- đều được lập trình và kiểm thử đơn vị độc lập song song trên các nhánh làm việc riêng biệt. Ở giai đoạn hoàn thiện cuối cùng, toàn bộ các nhánh thành phần được rà soát chéo và hợp nhất thông qua hệ thống kiểm thử hồi quy tự động gồm $290$ ca kiểm thử, trước khi nâng cấp toàn diện không gian giao diện ba chiều, tiến hành bốn mươi hai lượt đo đạc thực nghiệm chính thức và biên soạn báo cáo tổng kết.
+Để bảo đảm tiến độ đồng đều và tránh tình trạng chờ đợi dây chuyền giữa bốn thành
+viên trong nhóm, dự án được tổ chức theo phương pháp thiết kế đặc tả giao tiếp
+(\textit{API contract}) trước khi cài đặt chi tiết, chia làm ba giai đoạn nối tiếp
+nhau rõ ràng. Trong giai đoạn khởi đầu, toàn nhóm cùng phân tích đặc tả bài toán,
+thống nhất mô hình dữ liệu cốt lõi, quy ước định dạng mệnh đề số nguyên và ranh
+giới truyền nhận dữ liệu bất biến giữa bộ điều hành trò chơi với tác tử suy diễn.
+Nhờ bộ khung giao tiếp chuẩn hóa này, sang giai đoạn phát triển trọng tâm, cả bốn
+phân hệ lớn --- bao gồm môi trường quản lý trạng thái ẩn kèm bộ mã hóa CNF, bộ
+giải thỏa mãn mệnh đề DPLL tự cài đặt, tác tử suy diễn phản chứng kèm bộ nhớ đệm
+nghiệm mẫu, và tầng dịch vụ API kết nối trực tiếp kèm bộ công cụ đo kiểm hiệu năng
+(\textit{benchmark}) trên tiến trình độc lập --- đều được lập trình và kiểm thử đơn
+vị song song trên các nhánh làm việc riêng biệt. Ở giai đoạn tích hợp và hoàn
+thiện, các nhánh thành phần được rà soát chéo và hợp nhất thông qua hệ thống kiểm
+thử hồi quy tự động gồm $290$ ca kiểm thử, trước khi nâng cấp không gian giao diện
+ba chiều, tiến hành $42$ lượt đo đạc thực nghiệm chính thức và biên soạn báo cáo
+tổng kết.
 
 \subsection{Phân công nhiệm vụ}
-Bảng \ref{tab:team_contributions} trình bày chi tiết khối lượng công việc thực tế do từng thành viên đảm nhận (đối chiếu trung thực với lịch sử đóng góp trên kho lưu trữ chung của nhóm) cùng mức độ hoàn thành nhiệm vụ được giao. Theo quy chế đánh giá của học phần, tỷ lệ hoàn thành $100\%$ ở cả bốn thành viên xác nhận mỗi cá nhân đều đã thực hiện trọn vẹn, đúng hạn và đạt chuẩn chất lượng toàn bộ phần việc chuyên môn được phân công.
+Bảng \ref{tab:team_contributions} trình bày chi tiết khối lượng công việc thực tế
+do từng thành viên đảm nhận (đối chiếu trung thực với lịch sử đóng góp trên kho
+lưu trữ chung của nhóm) cùng mức độ hoàn thành nhiệm vụ được giao. Theo quy chế
+đánh giá của học phần, tỷ lệ hoàn thành $100\%$ ở cả bốn thành viên xác nhận mỗi
+cá nhân đều đã thực hiện đầy đủ, đúng hạn và đạt yêu cầu chất lượng phần việc
+chuyên môn được phân công.
 
 \begin{table}[htbp]
 \centering
-\caption{Bảng phân công nhiệm vụ chuyên môn và tỷ lệ hoàn thành của các thành viên trong nhóm}
+\caption{%
+    Bảng phân công nhiệm vụ chuyên môn và tỷ lệ hoàn thành của các thành viên
+    trong nhóm}
 \label{tab:team_contributions}
 \setstretch{1.08}
 \scriptsize
 \renewcommand{\arraystretch}{1.2}
 \begin{tabularx}{\textwidth}{p{3.4cm} l >{\raggedright\arraybackslash}X c}
 \toprule
-\textbf{Họ và Tên} & \textbf{MSSV} & \textbf{Nội dung công việc đảm nhiệm thực tế} & \textbf{Hoàn thành} \\
+\textbf{Họ và Tên} & \textbf{MSSV} & \textbf{Nội dung công việc đảm nhiệm thực tế} &
+\textbf{Hoàn thành} \\
 \midrule
 \textbf{Nguyễn Phúc Khang}\newline \textit{(Trưởng nhóm)} & 24120068 &
-Định hình kiến trúc phân tầng tổng thể, thiết kế mô hình tri thức nền tảng và điều phối rà soát hợp nhất toàn bộ các nhánh phát triển của nhóm. Xây dựng bộ quản trị trạng thái ẩn, quy trình kiểm định tính trung thực lời khai, kho cơ sở dữ liệu mười bốn màn chơi chuẩn và bộ định giá ngữ nghĩa đối chứng độc lập. Nghiên cứu và hiện thực bộ mã hóa tự động sang dạng chuẩn hội cho sáu họ manh mối cốt lõi cùng hai mở rộng giao vùng hình học và mạch chẵn lẻ biến phụ Tseitin tuyến tính. Thiết kế toàn bộ không gian bàn điều tra ba chiều \textit{Midnight Archive} với hiệu ứng ánh sáng, đổ bóng mưa đêm, con dấu đóng trực tiếp lên thẻ và tổng hợp biên tập báo cáo khoa học. & \textbf{100\%} \\
+Định hình kiến trúc phân tầng tổng thể, thiết kế mô hình dữ liệu cốt lõi và điều
+phối rà soát hợp nhất các nhánh phát triển của nhóm. Xây dựng bộ quản lý trạng thái
+ẩn, quy trình kiểm định tính trung thực lời khai, kho cơ sở dữ liệu $14$ màn chơi
+chuẩn và bộ đánh giá ngữ nghĩa đối chứng độc lập. Nghiên cứu và hiện thực bộ mã
+hóa tự động sang dạng chuẩn hội cho sáu họ manh mối cốt lõi cùng hai mở rộng giao
+vùng hình học và mạch chẵn lẻ biến phụ Tseitin tuyến tính. Thiết kế không gian bàn
+điều tra ba chiều \textit{Midnight Archive} với hiệu ứng ánh sáng vật lý, hiệu ứng
+shader mưa đêm, con dấu đóng trực tiếp lên thẻ và tổng hợp biên tập báo cáo tổng
+kết đồ án. & \textbf{100\%} \\
 \midrule
 \textbf{Phạm Minh Trọng} & 24120151 &
-Thiết kế và hiện thực tầng điều phối dịch vụ trực tuyến quản lý định danh phiên làm việc, đồng bộ chỉ số phiên bản tương tranh lạc quan và kết nối luồng thẩm định phán quyết, gợi ý cùng giải tự động từng bước. Xây dựng bộ khung thực nghiệm cô lập tiến trình hệ điều hành với cơ chế áp đặt giới hạn thời gian cứng, thu thập chỉ số đo đạc trên mười bốn màn chơi và tự động tổng hợp dữ liệu thực nghiệm. Phát triển hệ thống kiểm thử tích hợp đầu--cuối và rà soát đối chiếu số liệu thống kê trong báo cáo. & \textbf{100\%} \\
+Thiết kế và hiện thực tầng dịch vụ API quản lý định danh phiên làm việc, đồng bộ số
+hiệu phiên bản tương tranh lạc quan và kết nối luồng kiểm tra kết luận, gợi ý
+cùng giải tự động từng bước. Xây dựng bộ công cụ đo kiểm hiệu năng chạy trên tiến
+trình hệ điều hành độc lập với cơ chế áp đặt giới hạn thời gian cứng, thu thập chỉ
+số đo đạc trên $14$ màn chơi và tự động tổng hợp dữ liệu thực nghiệm. Phát triển
+hệ thống kiểm thử tích hợp đầu--cuối và rà soát đối chiếu số liệu thống kê trong
+báo cáo. & \textbf{100\%} \\
 \midrule
 \textbf{Trần Nguyễn Anh Khoa} & 24120075 &
-Nghiên cứu lý thuyết và hiện thực từ đầu bộ giải thỏa mãn mệnh đề DPLL tất định thuần túy không sử dụng thư viện giải ngoài. Xây dựng cơ chế tiếp nhận giả định tạm thời không phá hủy cơ sở tri thức, thủ tục lan truyền mệnh đề đơn vị lặp đến điểm bất động, phát hiện xung đột mệnh đề rỗng sớm, chiến lược chọn biến rẽ nhánh tất định kèm sao chép cô lập trạng thái quay lui và bộ đếm thông số thực thi vi mô. Thiết kế bộ kiểm thử chuyên sâu cho bộ giải trên các công thức biên và công thức bất khả thỏa lớn. & \textbf{100\%} \\
+Nghiên cứu lý thuyết và hiện thực từ đầu bộ giải thỏa mãn mệnh đề DPLL tất định
+thuần túy không sử dụng thư viện giải ngoài. Xây dựng cơ chế tiếp nhận giả định
+tạm thời không làm biến đổi cơ sở tri thức, thủ tục lan truyền mệnh đề đơn vị lặp
+đến điểm bất động, phát hiện xung đột mệnh đề rỗng sớm, chiến lược chọn biến rẽ
+nhánh tất định kèm sao chép cô lập trạng thái quay lui và bộ đếm thống kê thực thi
+chi tiết. Thiết kế bộ kiểm thử chuyên sâu cho bộ giải trên các công thức biên và
+công thức bất khả thỏa lớn. & \textbf{100\%} \\
 \midrule
 \textbf{Bùi Nhật Bảo} & 24120167 &
-Nghiên cứu và hiện thực tác tử suy diễn logic dựa trên nguyên lý chứng minh phản chứng bốn trạng thái tuân thủ tuyệt đối quy tắc nghiêm cấm đoán mò. Đề xuất ý tưởng, chứng minh tính đúng đắn và cài đặt cơ chế bộ nhớ đệm mô hình chứng nhân theo từng bước suy diễn nhằm cắt tỉa các lượt giải dư thừa. Xây dựng chu trình giải tự động ưu tiên hàng có ghi vết kiểm toán từng bước, thuật toán sinh gợi ý an toàn từ dữ kiện công khai và quy trình kiểm định nghiệm duy nhất sử dụng mệnh đề chặn. & \textbf{100\%} \\
+Nghiên cứu và hiện thực tác tử suy diễn logic dựa trên nguyên lý chứng minh phản
+chứng bốn trạng thái tuân thủ chặt chẽ quy tắc không suy đoán thiếu căn cứ. Đề xuất
+ý tưởng, chứng minh tính đúng đắn và cài đặt cơ chế bộ nhớ đệm nghiệm mẫu theo
+từng bước suy diễn nhằm cắt giảm các lượt giải dư thừa. Xây dựng chu trình giải tự
+động theo thứ tự ưu tiên hàng có ghi vết suy diễn từng bước, thuật toán sinh gợi
+ý an toàn từ dữ kiện công khai và quy trình kiểm định nghiệm duy nhất sử dụng mệnh
+đề chặn. & \textbf{100\%} \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \subsection{Tài nguyên dự án}
-Toàn bộ mã nguồn của hệ thống, tập dữ liệu mười bốn màn chơi chuẩn, bộ $290$ kịch bản kiểm thử tự động, công cụ tái lập thực nghiệm cùng đoạn phim minh họa toàn trình không gian bàn điều tra ba chiều (quay ở độ phân giải cao $1600 \times 900$ tốc độ $30$ khung hình/giây, trình diễn đầy đủ thao tác quan sát cảnh ba chiều, lọc vùng manh mối, phản hồi đóng dấu từ chối trực tiếp lên mặt thẻ khi suy đoán sớm, sử dụng gợi ý và giải tự động tới khi khép lại vụ án) được công bố công khai tại kho lưu trữ trực tuyến của nhóm: \url{https://github.com/khang1108/griductive}.
+Toàn bộ mã nguồn của hệ thống, tập dữ liệu $14$ màn chơi chuẩn, bộ $290$ kịch bản
+kiểm thử tự động, công cụ tái lập thực nghiệm cùng video minh họa toàn bộ luồng
+hoạt động trên không gian bàn điều tra ba chiều (quay ở độ phân giải cao
+$1600 \times 900$ tốc độ $30$ khung hình/giây, trình diễn đầy đủ thao tác quan sát
+cảnh ba chiều, lọc vùng manh mối, phản hồi đóng dấu từ chối trực tiếp lên mặt thẻ
+khi kết luận sớm, sử dụng gợi ý và giải tự động tới khi hoàn tất màn chơi) được
+lưu trữ công khai tại kho mã nguồn trực tuyến của nhóm:
+\url{https://github.com/khang1108/griductive}.
 
 \subsection{Tuyên bố sử dụng trí tuệ nhân tạo}
 \label{subsec:ai_appendix}
-Tuân thủ nghiêm túc nguyên tắc liêm chính học thuật và yêu cầu minh bạch tại Mục 4.6 của đề cương đồ án, nhóm xin khai báo cụ thể phạm vi ứng dụng các mô hình ngôn ngữ lớn trong quá trình thực hiện dự án. Trong suốt chu kỳ phát triển, công cụ trợ lý trí tuệ nhân tạo chỉ được sử dụng như một phương tiện hỗ trợ kỹ thuật ở các khâu phụ trợ gồm: tham khảo cách tổ chức ánh sáng vật lý, vật liệu bề mặt gỗ và kỹ thuật viết bộ đổ bóng cửa sổ mưa đêm trong môi trường đồ họa ba chiều trên trình duyệt; gợi ý mở rộng thêm các kịch bản kiểm thử biên tự động để nâng cao độ bao phủ kiểm thử phần mềm; đồng thời hỗ trợ rà soát lỗi chính tả, căn chỉnh bố cục bảng biểu và sơ đồ khối trong quá trình chế bản tài liệu \LaTeX.
+Tuân thủ nguyên tắc liêm chính học thuật và yêu cầu minh bạch tại Mục 4.6 của đề
+cương đồ án, nhóm xin khai báo cụ thể phạm vi ứng dụng các mô hình ngôn ngữ lớn
+trong quá trình thực hiện dự án. Trong suốt chu kỳ phát triển, công cụ trợ lý AI
+chỉ được sử dụng như một phương tiện hỗ trợ kỹ thuật ở các khâu phụ trợ gồm: tham
+khảo cách tổ chức ánh sáng vật lý, vật liệu bề mặt gỗ và kỹ thuật viết chương trình
+shader cửa sổ mưa đêm trong môi trường đồ họa ba chiều trên trình duyệt; gợi ý mở
+rộng thêm các kịch bản kiểm thử biên tự động để nâng cao độ bao phủ kiểm thử phần
+mềm; đồng thời hỗ trợ rà soát lỗi chính tả, căn chỉnh bố cục bảng biểu và sơ đồ
+khối trong quá trình chế bản tài liệu \LaTeX.
 
-Để làm rõ cách thức tương tác có kiểm soát của nhóm với công cụ hỗ trợ, dưới đây là ba câu lệnh yêu cầu tiêu biểu đại diện cho các tình huống tra cứu kỹ thuật thực tế trong dự án:
+Để làm rõ cách thức tương tác có kiểm soát của nhóm với công cụ hỗ trợ, dưới đây
+là ba yêu cầu truy vấn (\textit{prompt}) tiêu biểu đại diện cho các tình huống tra
+cứu kỹ thuật thực tế trong dự án:
 \begin{softbox}
-\textbf{Câu lệnh mẫu 1 (Kiểm chứng chéo tính tương đương ngữ nghĩa của bộ mã hóa):} \textit{``Hãy đề xuất kịch bản kiểm thử vét cạn toàn bộ bảng phân bố chân trị trên lưới $3 \times 3$ và $4 \times 4$ để đối chiếu tập cấu hình thỏa mãn theo định nghĩa ngữ nghĩa gốc với kết quả khả thỏa của công thức chuẩn hội sau khi biên dịch, đặc biệt chú ý các trường hợp biên của ràng buộc chẵn lẻ dùng biến phụ Tseitin và vùng giao hình học.''}\\[6pt]
-\textbf{Câu lệnh mẫu 2 (Thiết kế hiệu ứng phản hồi thị giác ba chiều tối giản):} \textit{``Làm thế nào để thiết kế hoạt ảnh một con dấu cao su nghiêng dập trực tiếp lên bề mặt thẻ nghi phạm trong không gian ba chiều rồi từ từ tan mực khi người chơi đưa ra phán quyết chưa đủ cơ sở chứng minh, nhằm thay thế hoàn toàn các hộp thoại thông báo gây rối mắt trên màn hình?''}\\[6pt]
-\textbf{Câu lệnh mẫu 3 (Chế bản học thuật trong \LaTeX):} \textit{``Hướng dẫn cách căn chỉnh sơ đồ kiến trúc phân tầng bằng thư viện vẽ vector trong \LaTeX{} để thể hiện rõ luồng dữ liệu một chiều chỉ trích xuất trạng thái công khai từ tầng quản trị trò chơi sang tầng tác tử suy diễn.''}
+\textbf{Prompt 1 - Kiểm chứng chéo tính tương đương ngữ nghĩa của bộ mã hóa:}
+\textit{``Hãy đề xuất kịch bản kiểm thử vét cạn toàn bộ phép gán chân trị trên lưới
+$3 \times 3$ và $4 \times 4$ để đối chiếu tập cấu hình thỏa mãn theo định nghĩa ngữ
+nghĩa gốc với kết quả khả thỏa của công thức chuẩn hội sau khi mã hóa, đặc biệt chú
+ý các trường hợp biên của ràng buộc chẵn lẻ dùng biến phụ Tseitin và vùng giao hình
+học.''}\\[6pt]
+\textbf{Prompt mẫu 2 - Thiết kế hiệu ứng ba chiều:}
+\textit{``Làm thế nào để thiết kế hoạt ảnh một con dấu cao su nghiêng hiển thị
+trực tiếp lên bề mặt thẻ nghi phạm trong không gian ba chiều rồi từ từ mờ dần khi
+người chơi đưa ra kết luận chưa đủ cơ sở chứng minh, nhằm thay thế các hộp thoại
+thông báo gây rối mắt trên màn hình?''}\\[6pt]
+\textbf{Prompt mẫu 3 - Sửa lỗi syntax trong \LaTeX:} \textit{``Hướng dẫn cách
+căn chỉnh sơ đồ kiến trúc phân tầng bằng thư viện vẽ vector trong \LaTeX{} để thể
+hiện rõ luồng dữ liệu một chiều chỉ trích xuất trạng thái công khai từ bộ điều hành
+trò chơi sang tầng tác tử suy diễn.''}
 \end{softbox}
 
-Nhóm xin cam kết và chịu trách nhiệm hoàn toàn rằng toàn bộ nền tảng trí tuệ cốt lõi của đồ án --- bao gồm mô hình hóa toán học biến mệnh đề, các phép biến đổi đại số tương đương sang dạng chuẩn hội, thuật toán giải thỏa mãn mệnh đề DPLL tự cài đặt, định lý phản chứng cùng cơ chế bộ nhớ đệm mô hình chứng nhân của tác tử suy diễn, cũng như toàn bộ số liệu thực nghiệm thu thập từ bốn mươi hai lượt đo đạc cô lập và nội dung phân tích học thuật trong báo cáo này --- đều do chính các thành viên trong nhóm trực tiếp nghiên cứu, thiết kế, kiểm chứng chéo và biên soạn.
+Nhóm xin cam kết và chịu trách nhiệm rằng toàn bộ phần mô hình hóa toán học biến
+mệnh đề, các phép biến đổi đại số tương đương sang dạng chuẩn hội, thuật toán giải
+thỏa mãn mệnh đề DPLL tự cài đặt, định lý phản chứng cùng cơ chế bộ nhớ đệm nghiệm
+mẫu của tác tử suy diễn, cũng như toàn bộ số liệu thực nghiệm thu thập từ $42$
+lượt đo đạc độc lập và nội dung phân tích học thuật trong báo cáo này đều do các
+thành viên trong nhóm trực tiếp nghiên cứu, thiết kế, kiểm chứng chéo và biên
+soạn.

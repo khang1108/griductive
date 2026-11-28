@@ -2,11 +2,53 @@
 \label{sec:conclusion}
 
 \subsection{Tổng kết kết quả}
-Nhìn lại toàn bộ quá trình nghiên cứu và triển khai, đồ án đã giải quyết trọn vẹn bài toán tự động hóa suy diễn logic mệnh đề nghiêm ngặt không đoán mò trên trò chơi lưới trinh thám, kết nối liền mạch giữa nền tảng lý thuyết hình thức với kỹ nghệ phần mềm và đồ họa tương tác ba chiều. Ở tầng biểu diễn tri thức, nhóm đã thiết lập hệ thống ánh xạ biến song ánh phân tách rạch ròi không gian biến gốc và biến phụ, đồng thời xây dựng thành công bộ biên dịch dạng chuẩn hội tự động cho sáu họ lời khai cốt lõi cùng hai mở rộng quan trọng là đại số vùng giao và mạch chẵn lẻ biến phụ Tseitin tuyến tính giúp thu gọn số mệnh đề tới hàng trăm lần trên vùng rộng. Toàn bộ hệ thống công thức biên dịch này đã được kiểm chứng đồng dư ngữ nghĩa vét cạn trên hàng chục nghìn cấu hình chân trị độc lập, bảo đảm độ tin cậy toán học tuyệt đối.
+Nhìn lại quá trình nghiên cứu và triển khai, đồ án đã xây dựng hoàn chỉnh giải pháp
+tự động hóa suy diễn logic mệnh đề tuân thủ nguyên tắc không suy đoán trên trò chơi
+suy luận trinh thám dạng lưới, kết nối liền mạch giữa nền tảng lý thuyết hình thức
+với kỹ nghệ phần mềm và đồ họa tương tác ba chiều. Ở tầng biểu diễn tri thức, nhóm
+đã thiết lập hệ thống ánh xạ biến song ánh phân tách rõ không gian biến gốc và biến
+phụ, đồng thời hiện thực thành công bộ mã hóa dạng chuẩn hội tự động cho sáu họ lời
+khai cốt lõi cùng hai mở rộng quan trọng là đại số vùng giao và mạch chẵn lẻ biến
+phụ Tseitin tuyến tính giúp thu gọn số mệnh đề hàng trăm lần trên miền rộng (cụ thể
+$565$ lần tại $m = 16$). Toàn bộ hệ thống công thức mã hóa này đã được kiểm chứng
+tương đương ngữ nghĩa vét cạn trên hàng chục nghìn cấu hình chân trị độc lập, bảo
+đảm tính đúng đắn toán học của tầng biểu diễn.
 
-Tiếp nối tầng biểu diễn, nhóm đã tự cài đặt hoàn chỉnh bộ giải thỏa mãn mệnh đề DPLL tất định hỗ trợ giả định đầu vào và lan truyền đơn vị đến điểm bất động, làm hạt nhân cho tác tử suy diễn bằng phản chứng. Đặc biệt, việc đề xuất và chứng minh chặt chẽ cơ chế bộ nhớ đệm mô hình chứng nhân giới hạn trong phạm vi từng bước đã giúp hệ thống cắt giảm tới gần $19\%$ số lượt gọi bộ giải trên các màn chơi phi tuyến, trong khi quy trình mệnh đề chặn cho phép xác thực tính duy nhất của nghiệm chỉ sau đúng hai lượt giải SAT. Kết quả thực nghiệm cô lập tiến trình trên mười bốn màn chơi chuẩn từ $3 \times 3$ đến $5 \times 5$ ghi nhận tỷ lệ giải thành công $100\%$ với thời gian trung vị tối đa chỉ $42{,}84\text{ ms}$, song hành cùng không gian bàn điều tra ba chiều \textit{Midnight Archive} mang lại trải nghiệm đóng dấu trực quan sinh động ngay trên từng thẻ nghi phạm.
+Tiếp nối tầng biểu diễn, nhóm đã tự cài đặt hoàn chỉnh bộ giải thỏa mãn mệnh đề
+DPLL tất định hỗ trợ giả định đầu vào và lan truyền đơn vị đến điểm bất động, làm
+bộ giải cốt lõi cho tác tử suy diễn bằng phản chứng. Đặc biệt, việc đề xuất và
+chứng minh chặt chẽ cơ chế bộ nhớ đệm nghiệm mẫu giới hạn trong phạm vi từng bước
+đã giúp hệ thống cắt giảm tới $18{,}75\%$ số lượt gọi bộ giải trên các màn chơi phi tuyến (trung bình $7{,}20\%$ trên toàn tập), trong khi quy trình mệnh
+đề chặn cho phép xác thực tính duy nhất của nghiệm chỉ sau đúng hai lượt giải SAT.
+Kết quả thực nghiệm trên tiến trình độc lập qua $14$ màn chơi chuẩn từ $3 \times 3$
+đến $5 \times 5$ ghi nhận tỷ lệ giải thành công $100\%$ với thời gian trung vị tối
+đa chỉ $42{,}84\text{ ms}$, song hành cùng không gian bàn điều tra ba chiều
+\textit{Midnight Archive} mang lại phản hồi đóng dấu trực quan ngay trên từng thẻ
+nghi phạm.
 
 \subsection{Hướng phát triển}
-Từ những phân tích trung thực về giới hạn hệ thống tại Chương \ref{sec:experiments}, nhóm định hình bốn hướng nghiên cứu nâng cấp giàu tính khả thi trong tương lai. Hướng ưu tiên hàng đầu là tái cấu trúc bộ giải mệnh đề theo kiến trúc học mệnh đề hướng xung đột (CDCL) kết hợp cơ chế hai literal theo dõi \cite{silva1999grasp,moskewicz2001chaff} và chiến lược chọn biến dựa trên tần suất hoạt động xung đột, qua đó loại bỏ hoàn toàn chi phí quét lại các mệnh đề đã thỏa và sao chép trạng thái khi quay lui. Song song với cải tiến bộ giải tổng quát, việc bổ sung cơ chế mã hóa thích nghi cho các ràng buộc đếm lực lượng --- tự động chuyển sang mạch bộ đếm tuần tự đa thức $O(m \cdot k)$ của Sinz \cite{sinz2005towards} mỗi khi kích thước vùng vượt quá tám ô --- sẽ mở đường cho các lời khai bao quát toàn bộ bàn cờ cỡ lớn mà không lo ngại bùng nổ tổ hợp.
+Từ những phân tích khách quan về giới hạn hệ thống tại Chương
+\ref{sec:experiments}, nhóm định hình bốn hướng nghiên cứu nâng cấp có tính khả thi
+cao trong tương lai. Hướng ưu tiên hàng đầu là tái cấu trúc bộ giải mệnh đề theo
+kiến trúc học mệnh đề hướng xung đột (\textit{CDCL}) kết hợp cơ chế theo dõi hai
+literal (\textit{two-watched literals}) \cite{silva1999grasp,moskewicz2001chaff} và
+chiến lược chọn biến dựa trên mức độ tham gia xung đột (như nhánh heuristic VSIDS),
+qua đó giảm đáng kể chi phí quét lại các mệnh đề đã thỏa và thao tác sao chép trạng
+thái khi quay lui. Song song với cải tiến bộ giải tổng quát, việc bổ sung cơ chế mã
+hóa thích nghi cho các ràng buộc đếm số lượng (\textit{cardinality}) --- tự động
+chuyển sang mạch bộ đếm tuần tự đa thức $O(m \cdot k)$ của Sinz
+\cite{sinz2005towards} mỗi khi kích thước vùng vượt quá tám ô --- sẽ cho phép xử
+lý hiệu quả các lời khai bao quát toàn bộ bàn cờ cỡ lớn mà tránh được sự bùng nổ
+số mệnh đề.
 
-Bên cạnh hiệu năng trên lưới rộng, để khắc phục triệt để điểm mù phân giải của DPLL trước hệ ràng buộc tuyển loại trừ toàn cục như đã phát hiện ở kịch bản đối kháng $\text{K04}$, bộ giải có thể được tích hợp thêm mô-đun đại số tuyến tính thực hiện phép khử Gauss--Jordan trực tiếp trên ma trận hệ số trường $\mathbb{F}_2$ theo hướng tiếp cận lai ghép hiện đại \cite{soos2009extending}. Cuối cùng, về mặt trải nghiệm nhận thức cho người học và người chơi, nhóm hướng tới việc khai thác kỹ thuật trích xuất tập con không thỏa tối tiểu (\textit{Minimal Unsatisfiable Subset}) từ vết chứng minh vô nghiệm của $KB_t \wedge \neg \ell^*$; khi đó, công cụ gợi ý trên bàn điều tra ba chiều không chỉ chỉ điểm chính xác nghi phạm nào đã lộ diện mà còn tự động biên tập được một lời giải thích ngôn ngữ tự nhiên ngắn gọn chỉ dẫn đúng hai hoặc ba lời khai then chốt đã khóa chặt kết luận ấy.
+Bên cạnh hiệu năng trên lưới rộng, để khắc phục hạn chế phân giải của DPLL trước hệ
+ràng buộc XOR toàn cục như đã ghi nhận ở kịch bản kiểm thử khắc nghiệt $\text{K04}$,
+bộ giải có thể được tích hợp thêm mô-đun đại số tuyến tính thực hiện phép khử
+Gauss--Jordan trực tiếp trên ma trận hệ số trường $\mathbb{F}_2$ theo hướng tiếp
+cận lai ghép hiện đại \cite{soos2009extending}. Cuối cùng, về mặt khả năng giải
+thích trực quan hỗ trợ người học và người chơi, nhóm hướng tới việc khai thác kỹ
+thuật trích xuất tập con không thỏa tối tiểu (\textit{Minimal Unsatisfiable
+Subset}) từ vết chứng minh vô nghiệm của $KB_t \wedge \neg \ell^*$; khi đó, công cụ
+gợi ý trên bàn điều tra ba chiều không những xác định chính xác nghi phạm kế tiếp
+có thể chứng minh mà còn tự động tổng hợp được lời giải thích ngôn ngữ tự nhiên
+ngắn gọn chỉ dẫn đúng hai hoặc ba lời khai then chốt dẫn tới kết luận ấy.

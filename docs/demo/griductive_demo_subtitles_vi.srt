@@ -1,0 +1,87 @@
+1
+00:00:00,500 --> 00:00:06,000
+Xin chào thầy cô. Nhóm chúng em xin trình bày hệ thống Griductive Solver — Đồ án 2 môn Cơ sở Trí tuệ Nhân tạo.
+
+2
+00:00:06,300 --> 00:00:15,500
+Hệ thống được thiết kế theo kiến trúc 5 tầng độc lập với ranh giới cô lập thông tin một chiều.
+
+3
+00:00:15,600 --> 00:00:24,200
+GameEngine giữ riêng đáp án ẩn; trong khi LogicAgent, CNFEncoder và DPLL chỉ tiếp nhận trạng thái công khai PublicState.
+
+4
+00:00:24,600 --> 00:00:35,500
+Phần 1: Giao diện điều tra ba chiều Midnight Archive với tọa độ lưới A–C, 1–3, tên và nghề nghiệp từng nghi phạm.
+
+5
+00:00:35,700 --> 00:00:45,800
+Nhấp vào nghi phạm đã mở như A1 để đọc lời khai và chiếu sáng trực tiếp vùng ô được tham chiếu trên mặt bàn.
+
+6
+00:00:46,000 --> 00:00:55,000
+Sổ tay Clues bên phải hỗ trợ chọn, ghim cố định manh mối để đối chiếu giao vùng và xóa nhanh hiệu ứng chiếu sáng.
+
+7
+00:00:55,200 --> 00:01:08,800
+Thanh trên cùng cung cấp đồng hồ ca trực, cài đặt đồ họa, tạm dừng và danh mục 14 vụ án chuẩn từ 3x3 đến 5x5.
+
+8
+00:01:09,200 --> 00:01:20,800
+Phần 2: Chế độ chơi thủ công và nguyên tắc không suy đoán. Người chơi có thể ghi chú giả thuyết nháp trên thẻ chưa mở C1.
+
+9
+00:01:21,000 --> 00:01:29,000
+Khi phán quyết sớm C1 là Criminal chưa đủ căn cứ, dấu NOT PROVABLE dập lên thẻ và giữ kín lời khai ẩn.
+
+10
+00:01:29,200 --> 00:01:38,000
+Khi chọn B1 là Innocent trái với lời khai của A1, hệ thống phân biệt rõ và đóng dấu đỏ CONTRADICTED.
+
+11
+00:01:38,200 --> 00:01:48,000
+Khi kết luận đúng B1 là Criminal, hệ thống xác nhận hệ quả logic, lật thẻ B1 và bổ sung lời khai mới vào sổ tay.
+
+12
+00:01:48,200 --> 00:02:10,800
+Từ dữ kiện mở rộng đơn điệu, ta lần lượt chứng minh hợp lệ 7 nghi phạm còn lại: A2, B2, C2, B3, C3, A3 và C1.
+
+13
+00:02:11,000 --> 00:02:21,500
+Hoàn tất cả 9/9 nghi phạm, hồ sơ tổng kết đóng dấu CASE CLOSED với chứng nhận suy diễn thủ công hợp lệ.
+
+14
+00:02:22,000 --> 00:02:36,800
+Phần 3: Chuyển sang màn 4x4 Scotland Yard Expert (16 nghi phạm) và ghim đồng thời hai manh mối đếm chẵn lẻ, khác trạng thái.
+
+15
+00:02:37,000 --> 00:02:47,800
+Nhấn Hint: LogicAgent kiểm tra phản chứng trên PublicState để gợi ý ô bắt buộc A4 mà không truy cập đáp án ẩn.
+
+16
+00:02:48,000 --> 00:03:00,000
+Bật bảng SAT Solver Trace và nhấn AI Step từng bước để quan sát trực tiếp số truy vấn SAT, mệnh đề CNF và lan truyền đơn vị.
+
+17
+00:03:00,200 --> 00:03:25,800
+Chạy Auto-Solve, thử tạm dừng an toàn bằng nút Stop rồi tiếp tục giải tự động hoàn tất 16/16 nghi phạm.
+
+18
+00:03:26,200 --> 00:03:58,000
+Phần 4: Kiểm thử lưới 5x5 Scalability Masterpiece (25 ô, 360 mệnh đề CNF) — giải mượt nhờ lan truyền đơn vị và Witness Cache.
+
+19
+00:03:58,200 --> 00:04:33,500
+Tiếp tục giải màn 5x5 Grand Master Detective (tua nhanh 2.0x bằng ffmpeg): 23 bước suy diễn hoàn tất trong chưa đầy 30 ms DPLL.
+
+20
+00:04:34,000 --> 00:04:50,000
+Phần 5: Bộ kiểm thử tự động pytest vượt qua 290/290 bài kiểm tra từ Domain, CNF, DPLL đến ranh giới cô lập PublicState.
+
+21
+00:04:50,200 --> 00:05:11,500
+Benchmark độc lập tiến trình giải trọn vẹn 14/14 màn chơi chuẩn (0 bước suy đoán), tối đa chỉ 60,3 ms ở màn 5x5 360 mệnh đề.
+
+22
+00:05:11,800 --> 00:05:18,000
+Cảm ơn thầy cô đã theo dõi phần trình bày hệ thống Griductive Solver của nhóm chúng em!
