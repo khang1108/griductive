@@ -2,16 +2,88 @@
 \label{sec:introduction}
 
 \subsection{Bối cảnh bài toán}
-Trong lịch sử phát triển của ngành Trí tuệ Nhân tạo, năng lực biểu diễn tri thức hình thức và suy diễn logic tất yếu luôn giữ vai trò trụ cột đối với các hệ thống hỗ trợ ra quyết định đòi hỏi độ tin cậy tuyệt đối \cite{russell2020aima}. Nếu như các bài toán tìm kiếm đường đi trên không gian trạng thái cổ điển thường giả định rằng tác tử được quan sát toàn bộ cấu hình của môi trường ngay từ thời điểm xuất phát, thì phần lớn các bài toán chẩn đoán và điều tra trong thực tế lại diễn ra dưới điều kiện thông tin khuyết thiếu. Trong những môi trường quan sát một phần đó, tri thức mới chỉ được hé lộ từng bước thông qua chuỗi tương tác tuần tự, đồng thời mỗi phán quyết sai lầm do suy đoán cảm tính đều có thể phá vỡ tính đúng đắn của toàn bộ quá trình lập luận. Chính vì vậy, các trò chơi giải đố suy luận thuần túy trên lưới hữu hạn đã trở thành môi trường chuẩn mực để kiểm chứng sức mạnh của các bộ giải thỏa mãn mệnh đề (SAT) và các tác tử dựa trên cơ sở tri thức \cite{biere2021handbook}.
+Trong lịch sử phát triển của ngành Trí tuệ Nhân tạo, năng lực biểu diễn tri thức
+hình thức và suy diễn logic chặt chẽ đóng vai trò nền tảng đối với các hệ thống
+hỗ trợ ra quyết định đòi hỏi tính đúng đắn cao \cite{russell2020aima}. Nếu
+như các bài toán tìm kiếm trên không gian trạng thái cổ điển thường giả định rằng
+tác tử được quan sát đầy đủ cấu hình của môi trường ngay từ thời điểm xuất phát,
+thì phần lớn các bài toán chẩn đoán và điều tra trong thực tế lại diễn ra trong
+điều kiện thông tin không đầy đủ. Trong những môi trường quan sát một phần đó,
+tri thức mới chỉ được hé lộ từng bước thông qua chuỗi tương tác tuần tự, đồng
+thời mỗi quyết định sai lầm do suy đoán thiếu bằng chứng đều có thể phá vỡ tính
+đúng đắn của quá trình lập luận. Chính vì vậy, các trò chơi giải đố suy luận
+thuần túy trên lưới hữu hạn đã trở thành môi trường chuẩn mực để kiểm chứng năng
+lực của các bộ giải thỏa mãn mệnh đề (SAT) và các tác tử dựa trên cơ sở tri thức
+\cite{biere2021handbook}.
 
-Tiêu biểu cho dòng bài toán này là trò chơi suy luận trinh thám \textbf{Griductive} \cite{griductive2025game}, được phát triển dựa trên cảm hứng từ trò chơi \textit{Clues by Sam} \cite{cluesbysam2024game}. Bối cảnh trò chơi đặt ra một bàn cờ vuông kích thước $N \times N$ gồm $N^2$ nghi phạm đứng tại các tọa độ cột và hàng xác định, trong đó mỗi người mang một thân phận ẩn cố định là tội phạm hoặc người vô tội. Ở trạng thái khởi tạo ban đầu, chỉ một số rất ít ô trên bàn cờ được mở sẵn để cung cấp thân phận thực tế kèm theo lời khai của nhân vật tương ứng. Một quy ước nền tảng làm nên chiều sâu toán học của trò chơi là mọi lời khai đã được tiết lộ đều hoàn toàn trung thực, bất kể người đưa ra lời khai đó thuộc phe tội phạm hay phe vô tội. Từ những mảnh ghép thông tin rời rạc đầu tiên, người chơi hoặc tác tử tự động phải kết hợp chặt chẽ các mối quan hệ không gian và định lượng để từng bước lật mở toàn bộ bàn cờ.
+Tiêu biểu cho lớp bài toán này là trò chơi suy luận trinh thám
+\textbf{Griductive} \cite{griductive2025game}, được phát triển dựa trên cảm hứng
+từ trò chơi \textit{Clues by Sam} \cite{cluesbysam2024game}. Bối cảnh trò chơi
+đặt ra một bàn cờ vuông kích thước $N \times N$ gồm $N^2$ nghi phạm đứng tại các
+tọa độ cột và hàng xác định, trong đó mỗi người mang một thân phận ẩn cố định là
+tội phạm hoặc người vô tội. Ở trạng thái khởi tạo ban đầu, chỉ một số ít ô trên
+bàn cờ được mở sẵn để cung cấp thân phận thực tế kèm theo lời khai của nhân vật
+tương ứng. Quy ước nền tảng tạo nên chiều sâu toán học của trò chơi là mọi lời
+khai đã được tiết lộ đều trung thực, bất kể người đưa ra lời khai đó thuộc phe
+tội phạm hay phe vô tội. Từ tập dữ kiện ban đầu còn hạn chế, người chơi hoặc tác
+tử tự động phải kết hợp các mối quan hệ không gian và định lượng để từng bước lật
+mở toàn bộ bàn cờ.
 
 \subsection{Thách thức suy diễn}
-Mặc dù quy tắc bề nổi của trò chơi khá trực quan, việc xây dựng một hệ thống giải tự động hoàn chỉnh lại đặt ra những thách thức lý thuyết và kỹ thuật hết sức khắt khe. Thách thức lớn nhất nằm ở nguyên lý \textbf{nghiêm cấm đoán mò}: tại bất kỳ bước thời gian $t$ nào với cơ sở tri thức công khai $KB_t$, một ô chưa mở chỉ được phép kết luận là tội phạm khi mọi mô hình logic thỏa mãn $KB_t$ đều gán trạng thái tội phạm cho ô đó, và tương tự chỉ được phép kết luận là vô tội khi không tồn tại bất kỳ mô hình hợp lệ nào cho phép ô đó là tội phạm. Nếu cả hai giả thuyết trái ngược về một nhân vật đều tương thích với các dữ kiện hiện hữu, mọi phán quyết áp đặt lên nhân vật ấy đều bị xem là bước đi vô căn cứ và bị hệ thống bác bỏ ngay lập tức, cho dù phán quyết ấy có tình cờ trùng khớp với đáp án ẩn phía sau đi chăng nữa.
+Mặc dù luật chơi thoạt nhìn khá trực quan, việc xây dựng một hệ thống giải tự
+động hoàn chỉnh lại đặt ra nhiều yêu cầu lý thuyết và kỹ thuật chặt chẽ.
+Thách thức cốt lõi nằm ở \textbf{nguyên tắc không suy đoán thiếu căn cứ}
+(\textit{no-guessing rule}): tại bất kỳ bước suy diễn $t$ nào với cơ sở tri thức
+công khai $KB_t$, một ô chưa mở chỉ được phép kết luận là tội phạm khi mọi mô
+hình logic thỏa mãn $KB_t$ đều gán trạng thái tội phạm cho ô đó, và tương tự chỉ
+được phép kết luận là vô tội khi không tồn tại mô hình hợp lệ nào cho phép ô đó
+là tội phạm. Nếu cả hai giả thuyết trái ngược về một nhân vật đều tương thích với
+các dữ kiện hiện hữu, mọi phán quyết đưa ra cho nhân vật ấy đều bị xem là chưa đủ
+cơ sở chứng minh và bị hệ thống từ chối, cho dù phán quyết ấy có tình cờ trùng
+khớp với đáp án ẩn phía sau.
 
-Bên cạnh yêu cầu khắt khe về mặt ngữ nghĩa hệ quả logic, bài toán còn đối mặt với sự bùng nổ tổ hợp trong quá trình biên dịch tri thức sang dạng chuẩn hội (CNF) cũng như trong quá trình tìm kiếm nghiệm thỏa mãn \cite{cook1971complexity}. Cụ thể hơn, các lời khai trong trò chơi không chỉ dừng lại ở những khẳng định đơn lẻ hay quan hệ đồng nhất giữa hai cá nhân, mà còn bao hàm các ràng buộc đếm số lượng tội phạm trên từng hàng, từng cột, vùng tám ô lân cận, vùng giao nhau giữa nhiều tập hợp, hay thậm chí là tính chẵn lẻ trên một miền bất kỳ. Khi kích thước vùng tác động tăng lên, phép mã hóa trực tiếp không sử dụng biến phụ trợ rất dễ làm số lượng mệnh đề tăng vọt theo hàm tổ hợp hoặc hàm mũ \cite{tseitin1983complexity,sinz2005towards}. Hơn thế nữa, ở mỗi bước suy diễn trên bàn cờ lớn, tác tử phải liên tục thẩm định hàng chục ô chưa biết để tìm ra bước đi bị ép buộc duy nhất, đòi hỏi sự phối hợp nhịp nhàng giữa cơ chế lan truyền đơn vị tốc độ cao và chiến lược tái sử dụng các mô hình thỏa mãn nhằm triệt tiêu các truy vấn dư thừa.
+Bên cạnh yêu cầu chặt chẽ về mặt hệ quả logic, bài toán còn đối mặt với sự bùng
+nổ tổ hợp trong quá trình mã hóa tri thức sang dạng chuẩn hội (CNF) cũng như
+trong quá trình tìm kiếm nghiệm thỏa mãn \cite{cook1971complexity}. Cụ thể hơn,
+các lời khai trong trò chơi không chỉ dừng lại ở những khẳng định đơn lẻ hay quan
+hệ đồng nhất giữa hai cá nhân, mà còn bao hàm các ràng buộc đếm số lượng tội phạm
+trên từng hàng, từng cột, vùng tám ô lân cận, vùng giao nhau giữa nhiều tập hợp,
+hoặc tính chẵn lẻ trên một miền bất kỳ. Khi kích thước miền tham chiếu tăng lên,
+phép mã hóa trực tiếp không sử dụng biến phụ trợ rất dễ làm số lượng mệnh đề tăng
+nhanh theo hàm tổ hợp hoặc hàm mũ \cite{tseitin1983complexity,sinz2005towards}.
+Hơn thế nữa, ở mỗi bước suy diễn trên bàn cờ lớn, tác tử phải liên tục kiểm tra
+nhiều ô chưa biết để tìm ra bước đi được suy ra tất yếu, đòi hỏi sự phối hợp
+nhịp nhàng giữa cơ chế lan truyền mệnh đề đơn vị hiệu quả và chiến lược tái sử
+dụng các mô hình thỏa mãn nhằm cắt giảm các truy vấn dư thừa.
 
 \subsection{Mục tiêu và bố cục}
-Xuất phát từ những động lực và thách thức nêu trên, đồ án hướng tới mục tiêu nghiên cứu, thiết kế và hiện thực trọn vẹn một hệ sinh thái giải đố suy diễn mệnh đề tự động hoàn toàn từ tầng biểu diễn toán học đến tầng tương tác thị giác ba chiều. Trước hết, nhóm tập trung xây dựng kiến trúc điều phối trò chơi có khả năng cách ly tuyệt đối đáp án gốc khỏi tác tử suy diễn, bảo đảm mọi quyết định và gợi ý đều được dẫn xuất thuần túy từ dữ kiện công khai. Tiếp nối nền tảng đó, nhóm phát triển bộ biên dịch tự động sang dạng chuẩn hội cho toàn bộ sáu họ manh mối cốt lõi cùng hai phần mở rộng gồm phép giao vùng hình học và ràng buộc chẵn lẻ chuỗi tuyển loại trừ tuyến tính, kết hợp với bộ giải thỏa mãn mệnh đề DPLL tất định tự cài đặt không phụ thuộc thư viện ngoài \cite{davis1960computing,davis1962machine}. Song song với phần lõi thuật toán, nhóm thiết kế không gian bàn điều tra ba chiều sống động với phản hồi đóng dấu trực tiếp lên thẻ bài, đồng thời xây dựng quy trình thực nghiệm cô lập tiến trình để đánh giá toàn diện hiệu năng hệ thống trên mười bốn màn chơi chuẩn từ cỡ $3 \times 3$ đến cỡ $5 \times 5$.
+Xuất phát từ những động lực và thách thức nêu trên, đồ án hướng tới mục tiêu
+nghiên cứu, thiết kế và xây dựng hoàn chỉnh một hệ thống giải đố suy diễn mệnh đề
+tự động từ tầng biểu diễn toán học đến tầng giao diện trực quan ba chiều. Trước
+hết, nhóm tập trung xây dựng kiến trúc điều phối trò chơi có khả năng cô lập chặt
+chẽ đáp án gốc khỏi tác tử suy diễn, bảo đảm mọi quyết định và gợi ý đều được dẫn
+xuất thuần túy từ dữ kiện công khai. Tiếp nối nền tảng đó, nhóm phát triển bộ mã
+hóa CNF tự động cho toàn bộ sáu họ manh mối cốt lõi cùng hai phần mở rộng gồm
+phép giao vùng hình học và ràng buộc chẵn lẻ dùng chuỗi phép tuyển loại trừ (XOR)
+tuyến tính, kết hợp với bộ giải thỏa mãn mệnh đề DPLL tất định tự cài đặt không
+phụ thuộc thư viện ngoài \cite{davis1960computing,davis1962machine}. Song song
+với phần lõi thuật toán, nhóm thiết kế không gian bàn điều tra ba chiều với hiệu
+ứng đóng dấu phản hồi trực tiếp trên mặt thẻ, đồng thời xây dựng quy trình thực
+nghiệm trên các tiến trình độc lập để đánh giá toàn diện hiệu năng hệ thống qua
+$14$ màn chơi chuẩn từ cỡ $3 \times 3$ đến cỡ $5 \times 5$.
 
-Phần còn lại của báo cáo được tổ chức theo mạch lập luận xuyên suốt gồm sáu chương liên kết chặt chẽ. Chương \ref{sec:architecture} phân tích đặc trưng môi trường tác tử, làm rõ kiến trúc phân tầng bảo mật thông tin ẩn và giới thiệu không gian điều tra ba chiều. Tiếp theo, Chương \ref{sec:formulation} trình bày phương pháp ánh xạ biến mệnh đề, đại số vùng không gian và chứng minh từng bước các phép biến đổi tương đương sang dạng chuẩn hội. Trên cơ sở biểu diễn tri thức đó, Chương \ref{sec:algorithms} đi sâu vào giải thuật DPLL, định lý suy diễn bằng phản chứng, chứng minh tính đúng đắn của bộ nhớ đệm mô hình chứng nhân và quy trình kiểm định nghiệm duy nhất. Chương \ref{sec:experiments} công bố kết quả đo đạc thực nghiệm, phân tích bóc tách, đánh giá độ mở rộng và mổ xẻ các kịch bản suy biến cùng giới hạn kỹ thuật. Cuối cùng, Chương \ref{sec:conclusion} đúc kết các đóng góp trọng tâm kèm hướng phát triển tiếp theo, trước khi Chương \ref{sec:contribution} trình bày công tác quản trị đồ án, phân công nhiệm vụ và tuyên bố minh bạch về việc sử dụng công cụ trí tuệ nhân tạo.
+Phần còn lại của báo cáo được tổ chức theo mạch lập luận gồm sáu chương liên kết
+chặt chẽ. Chương \ref{sec:architecture} phân tích đặc trưng môi trường tác tử,
+làm rõ kiến trúc phân tầng bảo vệ thông tin ẩn và giới thiệu không gian điều tra
+ba chiều. Tiếp theo, Chương \ref{sec:formulation} trình bày phương pháp ánh xạ
+biến mệnh đề, đại số vùng không gian và chứng minh từng bước các phép biến đổi
+tương đương sang dạng chuẩn hội. Trên cơ sở biểu diễn tri thức đó, Chương
+\ref{sec:algorithms} đi sâu vào giải thuật DPLL, định lý suy diễn bằng phản chứng,
+chứng minh tính đúng đắn của bộ nhớ đệm mô hình chứng nhân (\textit{witness
+model}) và quy trình kiểm định nghiệm duy nhất. Chương \ref{sec:experiments} công
+bố kết quả đo đạc thực nghiệm, đánh giá đối chứng thành phần (\textit{ablation
+study}), phân tích quy luật tăng trưởng mệnh đề và khảo sát các kịch bản biên
+cùng giới hạn kỹ thuật. Cuối cùng, Chương \ref{sec:conclusion} đúc kết các đóng
+góp trọng tâm kèm hướng phát triển tiếp theo, trước khi Chương
+\ref{sec:contribution} trình bày công tác quản lý đồ án, phân công nhiệm vụ và
+tuyên bố minh bạch về việc sử dụng công cụ trí tuệ nhân tạo.

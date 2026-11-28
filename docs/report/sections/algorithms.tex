@@ -1,156 +1,300 @@
 \section{Giải thuật suy diễn và bộ giải SAT}
 \label{sec:algorithms}
 
-Sau khi cơ sở tri thức công khai tại từng thời điểm đã được chuyển hóa thành tập mệnh đề chuẩn hội $KB_t$, bài toán cốt lõi tiếp theo là thiết kế cơ chế suy diễn tự động có khả năng tìm ra chính xác những ô bị ép buộc chân trị mà không bao giờ vi phạm nguyên tắc cấm đoán mò. Chương này trình bày chi tiết thuật toán giải thỏa mãn mệnh đề DPLL tự cài đặt, định lý suy diễn hệ quả bằng phản chứng, chứng minh toán học cho kỹ thuật bộ nhớ đệm mô hình chứng nhân và phương pháp kiểm định tính duy nhất của nghiệm.
+Sau khi cơ sở tri thức công khai tại từng thời điểm đã được chuyển đổi thành tập
+mệnh đề chuẩn hội $KB_t$, bài toán cốt lõi tiếp theo là thiết kế cơ chế suy diễn
+tự động có khả năng tìm ra chính xác những ô có chân trị được xác định tất yếu,
+đồng thời tuân thủ chặt chẽ nguyên tắc không suy đoán khi thiếu căn cứ. Chương này
+trình bày chi tiết thuật toán giải thỏa mãn mệnh đề DPLL tự cài đặt, định lý suy
+diễn hệ quả bằng phản chứng, chứng minh toán học cho kỹ thuật bộ nhớ đệm mô hình
+chứng nhân và phương pháp kiểm định tính duy nhất của nghiệm.
 
 \subsection{Giải thuật DPLL tất định}
 \label{subsec:dpll_solver}
-Bài toán kiểm tra tính thỏa được của một công thức logic mệnh đề ở dạng chuẩn hội (SAT) là bài toán $\text{NP}$-đầy đủ đầu tiên trong lịch sử khoa học máy tính \cite{cook1971complexity}. Thay vì dựa vào các thư viện tối ưu hóa đóng gói sẵn bên ngoài, nhóm tự thiết kế và hiện thực trọn vẹn giải thuật \textbf{Davis--Putnam--Logemann--Loveland (DPLL)} \cite{davis1960computing,davis1962machine} kết hợp cơ chế truyền danh sách giả định tạm thời, được trình bày hình thức trong Thuật toán \ref{alg:dpll}. Việc hỗ trợ danh sách giả định $\mathcal{A} = (\ell_1, \dots, \ell_q)$ ngay tại đầu vào cho phép tác tử suy diễn liên tục đặt các câu hỏi giả định ngược lên cùng một tập mệnh đề $KB_t$ bất biến mà không cần cấp phát lại hay làm xáo trộn cấu trúc cơ sở tri thức gốc.
+Bài toán kiểm tra tính thỏa được của một công thức logic mệnh đề ở dạng chuẩn hội
+(SAT) là bài toán $\text{NP}$-đầy đủ đầu tiên trong lịch sử khoa học máy tính
+\cite{cook1971complexity}. Thay vì dựa vào các thư viện tối ưu hóa đóng gói sẵn
+bên ngoài, nhóm tự thiết kế và cài đặt hoàn chỉnh giải thuật
+\textbf{Davis--Putnam--Logemann--Loveland (DPLL)}
+\cite{davis1960computing,davis1962machine} kết hợp cơ chế truyền danh sách giả
+định tạm thời, được trình bày hình thức trong Thuật toán \ref{alg:dpll}. Việc hỗ
+trợ danh sách giả định $\mathcal{A} = (\ell_1, \dots, \ell_q)$ ngay tại đầu vào
+cho phép tác tử suy diễn liên tục thực hiện các truy vấn với giả định trái ngược
+trên cùng một tập mệnh đề $KB_t$ bất biến mà không cần cấp phát lại hay làm xáo
+trộn cấu trúc cơ sở tri thức gốc.
 
 \begin{algorithm}[H]
 \caption{Giải thuật DPLL tất định kết hợp lan truyền mệnh đề đơn vị}
 \label{alg:dpll}
 \footnotesize
 \begin{algorithmic}[1]
-\Require Tập mệnh đề chuẩn hội $\mathcal{F}$, dãy literal giả định tạm thời $\mathcal{A}$
+\Require Tập mệnh đề chuẩn hội $\mathcal{F}$, dãy literal giả định tạm thời
+    $\mathcal{A}$
 \Ensure Kết quả khả thỏa, mô hình chân trị $M$ (nếu có) và bộ thống kê thực thi
-\State $V \gets \text{SắpXếpTăngDần}\big(\{|\ell| : C \in \mathcal{F}, \ell \in C\} \cup \{|\ell| : \ell \in \mathcal{A}\}\big)$
-\State $\sigma_0 \gets \emptyset$; \quad $n_{\text{nhánh}} \gets 0$; \quad $n_{\text{lan truyền}} \gets 0$; \quad $n_{\text{quay lui}} \gets 0$
+\State $V \gets \textsc{Sort-Asc}\big(
+    \{|\ell| : C \in \mathcal{F}, \ell \in C\} \cup \{|\ell| : \ell \in \mathcal{A}\}
+\big)$
+\State $\sigma_0 \gets \emptyset$; \quad $n_{\text{nhánh}} \gets 0$; \quad
+    $n_{\text{lan truyền}} \gets 0$; \quad $n_{\text{quay lui}} \gets 0$
 \For{mỗi literal $\ell \in \mathcal{A}$}
-    \If{$|\ell| \in \text{miền}(\sigma_0)$ \textbf{và} $\sigma_0(|\ell|) \ne (\ell > 0)$}
-        \State \Return $\langle \text{False},\; \varnothing,\; (n_{\text{nhánh}}, n_{\text{lan truyền}}, n_{\text{quay lui}}) \rangle$
+    \If{$|\ell| \in \mathrm{dom}(\sigma_0)$ \textbf{và}
+        $\sigma_0(|\ell|) \ne (\ell > 0)$}
+        \State \Return $\langle \text{False},\; \varnothing,\;
+            (n_{\text{nhánh}}, n_{\text{lan truyền}}, n_{\text{quay lui}}) \rangle$
     \EndIf
     \State $\sigma_0(|\ell|) \gets (\ell > 0)$
 \EndFor
-\Function{LanTruyềnĐơnVị}{$\mathcal{F}, \sigma$}
+\Function{Unit-Propagate}{$\mathcal{F}, \sigma$}
     \Loop
         \State $f \gets \text{False}$
         \For{mỗi mệnh đề $C \in \mathcal{F}$}
-            \If{$\exists \ell \in C : |\ell| \in \text{miền}(\sigma) \wedge \sigma(|\ell|) = (\ell > 0)$}
+            \If{$\exists \ell \in C : |\ell| \in \mathrm{dom}(\sigma)
+                \wedge \sigma(|\ell|) = (\ell > 0)$}
                 \State \textbf{continue}
             \EndIf
-            \State $U \gets [\ell \in C \mid |\ell| \notin \text{miền}(\sigma)]$
+            \State $U \gets [\ell \in C \mid |\ell| \notin \mathrm{dom}(\sigma)]$
             \If{$|U| = 0$}
-                \State \Return $\bot$ \Comment{Xung đột: mọi literal trong mệnh đề $C$ đều nhận chân trị sai}
+                \State \Return $\bot$
+                    \Comment{Xung đột: mọi literal trong mệnh đề $C$ đều nhận chân trị sai}
             \ElsIf{$|U| = 1$}
                 \State $\ell^* \gets U[0]$; \quad $\sigma(|\ell^*|) \gets (\ell^* > 0)$
-                \State $n_{\text{lan truyền}} \gets n_{\text{lan truyền}} + 1$; \quad $f \gets \text{True}$; \quad \textbf{break}
+                \State $n_{\text{lan truyền}} \gets n_{\text{lan truyền}} + 1$;
+                    \quad $f \gets \text{True}$; \quad \textbf{break}
             \EndIf
         \EndFor
         \If{$\neg f$} \Return $\sigma$ \EndIf
     \EndLoop
 \EndFunction
-\Function{DuyệtNhánh}{$\mathcal{F}, \sigma$}
-    \State $\sigma' \gets \Call{LanTruyềnĐơnVị}{\mathcal{F}, \sigma}$
+\Function{DPLL-Search}{$\mathcal{F}, \sigma$}
+    \State $\sigma' \gets \Call{Unit-Propagate}{\mathcal{F}, \sigma}$
     \If{$\sigma' = \bot$} \Return $\bot$ \EndIf
-    \If{mọi mệnh đề $C \in \mathcal{F}$ đều đã có ít nhất một literal đúng dưới $\sigma'$} \Return $\sigma'$ \EndIf
-    \State $v^* \gets \min \{v \in V \mid v \notin \text{miền}(\sigma')\}$
+    \If{mọi mệnh đề $C \in \mathcal{F}$ đều đã có ít nhất một literal đúng dưới
+        $\sigma'$} \Return $\sigma'$ \EndIf
+    \State $v^* \gets \min \{v \in V \mid v \notin \mathrm{dom}(\sigma')\}$
     \For{$b \in (\text{True}, \text{False})$}
         \State $n_{\text{nhánh}} \gets n_{\text{nhánh}} + 1$
-        \State $\sigma_{\text{mới}} \gets \text{BảnSao}(\sigma')$; \quad $\sigma_{\text{mới}}(v^*) \gets b$
-        \State $\tau \gets \Call{DuyệtNhánh}{\mathcal{F}, \sigma_{\text{mới}}}$
+        \State $\sigma_{\text{mới}} \gets \textsc{Copy}(\sigma')$; \quad
+            $\sigma_{\text{mới}}(v^*) \gets b$
+        \State $\tau \gets \Call{DPLL-Search}{\mathcal{F}, \sigma_{\text{mới}}}$
         \If{$\tau \ne \bot$} \Return $\tau$ \EndIf
         \State $n_{\text{quay lui}} \gets n_{\text{quay lui}} + 1$
     \EndFor
     \State \Return $\bot$
 \EndFunction
-\State $\sigma^* \gets \Call{DuyệtNhánh}{\mathcal{F}, \sigma_0}$
-\If{$\sigma^* = \bot$} \Return $\langle \text{False},\; \varnothing,\; (n_{\text{nhánh}}, n_{\text{lan truyền}}, n_{\text{quay lui}}) \rangle$ \EndIf
-\State $M \gets \{v \mapsto \sigma^*(v) \text{ nếu } v \in \text{miền}(\sigma^*) \text{ ngược lại } \text{False} \mid v \in V\}$
-\State \Return $\langle \text{True},\; M,\; (n_{\text{nhánh}}, n_{\text{lan truyền}}, n_{\text{quay lui}}) \rangle$
+\State $\sigma^* \gets \Call{DPLL-Search}{\mathcal{F}, \sigma_0}$
+\If{$\sigma^* = \bot$} \Return $\langle \text{False},\; \varnothing,\;
+    (n_{\text{nhánh}}, n_{\text{lan truyền}}, n_{\text{quay lui}}) \rangle$ \EndIf
+\State $M \gets \{v \mapsto \sigma^*(v) \text{ nếu } v \in \mathrm{dom}(\sigma^*)
+    \text{ ngược lại } \text{False} \mid v \in V\}$
+\State \Return $\langle \text{True},\; M,\;
+    (n_{\text{nhánh}}, n_{\text{lan truyền}}, n_{\text{quay lui}}) \rangle$
 \end{algorithmic}
 \end{algorithm}
 
-Động cơ cắt tỉa mạnh mẽ nhất bên trong giải thuật trên chính là thủ tục \textbf{lan truyền mệnh đề đơn vị lặp đến điểm bất động}. Xét dưới một phép gán chân trị một phần $\sigma$, nếu một mệnh đề $C$ chưa được thỏa mãn và toàn bộ các literal trong $C$ ngoại trừ duy nhất một literal chưa gán $\ell^*$ đều đã bị gán giá trị sai, thì $\ell^*$ bắt buộc phải nhận giá trị đúng để duy trì khả năng thỏa mãn của $C$. Mỗi phép ép buộc như vậy lại tiếp tục làm co ngắn các mệnh đề liên đới khác và có thể nhanh chóng làm lộ diện mệnh đề rỗng ($|U| = 0$) khi xảy ra mâu thuẫn dây chuyền. Chỉ khi quá trình lan truyền đạt tới trạng thái bão hòa mà công thức vẫn chưa thỏa hết, bộ giải mới chọn biến chưa gán có chỉ số nhỏ nhất $v^* \in V$ để thử lần lượt hai nhánh $\text{True}$ rồi $\text{False}$ trên bản sao trạng thái độc lập. Nhờ quy tắc chọn biến cố định này, cây tìm kiếm hoàn toàn tất định và tái lập chính xác mọi thông số đo đạc trên mọi máy tính. Về mặt độ phức tạp, với $V$ biến và tổng độ dài xuất hiện literal bằng $L = \sum_{C \in \mathcal{F}} |C|$, mỗi pha lan truyền đến điểm bất động tốn tối đa $O(V \cdot L)$ phép kiểm tra; trong trường hợp xấu nhất trên các công thức đối xứng vô nghiệm, thời gian chạy bị chặn trên bởi $O(2^V \cdot V \cdot L)$ với chi phí bộ nhớ ngăn xếp đệ quy đa thức $O(V^2)$.
+Cơ chế cắt tỉa chủ lực bên trong giải thuật trên chính là thủ tục \textbf{lan
+truyền mệnh đề đơn vị lặp đến trạng thái bão hòa (điểm bất động)}. Xét dưới một
+phép gán chân trị một phần $\sigma$, nếu một mệnh đề $C$ chưa được thỏa mãn và
+toàn bộ các literal trong $C$ ngoại trừ duy nhất một literal chưa gán $\ell^*$ đều
+đã bị gán giá trị sai, thì $\ell^*$ bắt buộc nhận giá trị đúng để mệnh đề $C$ có
+thể thỏa mãn. Mỗi phép ép buộc như vậy lại tiếp tục rút gọn các mệnh đề
+có chứa biến liên quan và có thể nhanh chóng dẫn đến sự xuất hiện của mệnh đề rỗng
+($|U| = 0$) khi xảy ra mâu thuẫn dây chuyền. Chỉ khi quá trình lan truyền đạt tới
+trạng thái bão hòa mà công thức vẫn chưa thỏa hết, bộ giải mới chọn biến chưa gán
+có chỉ số nhỏ nhất $v^* \in V$ để thử lần lượt hai nhánh $\text{True}$ rồi
+$\text{False}$ trên bản sao trạng thái độc lập. Nhờ quy tắc chọn biến cố định này,
+cây tìm kiếm mang tính tất định và tái lập chính xác mọi thông số đo đạc trên các
+môi trường chạy khác nhau. Về mặt độ phức tạp, với $V$ biến và tổng số lần xuất
+hiện literal $L = \sum_{C \in \mathcal{F}} |C|$, mỗi pha lan truyền đến điểm bất
+động tốn tối đa $O(V \cdot L)$ phép kiểm tra; trong trường hợp xấu nhất trên các
+công thức đối xứng vô nghiệm, thời gian chạy bị chặn trên bởi $O(2^V \cdot V \cdot
+L)$ với chi phí bộ nhớ ngăn xếp đệ quy đa thức $O(V^2)$.
 
 \subsection{Suy diễn hệ quả bằng phản chứng}
 \label{subsec:logic_agent}
-Khác với bài toán tìm một nghiệm bất kỳ, nhiệm vụ của tác tử suy diễn tại bước $t$ là chứng minh xem liệu một biến gốc $C_i$ (ứng với ô chưa mở $i$) có mang cùng một chân trị duy nhất trên \textit{mọi} mô hình của $KB_t$ hay không. Nền tảng toán học chuyển đổi bài toán kiểm tra hệ quả logic sang bài toán kiểm tra tính bất khả thỏa được phát biểu qua định lý phản chứng kinh điển sau đây \cite{russell2020aima}.
+Khác với bài toán tìm một nghiệm bất kỳ, nhiệm vụ của tác tử suy diễn tại bước $t$
+là chứng minh xem liệu một biến gốc $C_i$ (ứng với ô chưa mở $i$) có mang cùng một
+chân trị duy nhất trên \textit{mọi} mô hình của $KB_t$ hay không. Nền tảng toán
+học chuyển đổi bài toán kiểm tra hệ quả logic sang bài toán kiểm tra tính bất khả
+thỏa được phát biểu qua định lý phản chứng kinh điển sau đây
+\cite{russell2020aima}.
 
 \noindent\textbf{Định lý 1 (Kiểm định hệ quả mệnh đề bằng phản chứng):}
-\textit{Cho cơ sở tri thức mệnh đề $KB_t$ và một literal đơn $\ell \in \{C_i, \neg C_i\}$. Khi đó $KB_t$ kéo theo logic $\ell$ ($KB_t \models \ell$) khi và chỉ khi công thức mở rộng $KB_t \wedge \neg \ell$ là không thỏa được.}
+\textit{Cho cơ sở tri thức mệnh đề $KB_t$ và một literal đơn
+$\ell \in \{C_i, \neg C_i\}$. Khi đó $\ell$ là hệ quả logic của $KB_t$
+($KB_t \models \ell$) khi và chỉ khi công thức mở rộng $KB_t \wedge \neg \ell$ là
+không thỏa được.}
 
 \noindent\textbf{Chứng minh:}
-Theo định nghĩa ngữ nghĩa chuẩn của quan hệ hệ quả logic, $KB_t \models \ell$ xảy ra khi và chỉ khi với mọi phép gán chân trị $M$, nếu $M$ làm thỏa toàn bộ các mệnh đề trong $KB_t$ ($M \models KB_t$) thì $M$ cũng đồng thời làm thỏa $\ell$ ($M \models \ell$). Phát biểu này tương đương logic với mệnh đề phủ định rằng không tồn tại bất kỳ phép gán $M$ nào làm thỏa $KB_t$ nhưng lại làm sai $\ell$ (tức làm đúng $\neg \ell$). Nói cách khác, tập hợp mô hình của công thức hội $\text{MôHình}(KB_t \wedge \neg \ell) = \emptyset$, đồng nghĩa $KB_t \wedge \neg \ell$ là không thỏa được. $\blacksquare$
+Theo định nghĩa ngữ nghĩa chuẩn của quan hệ hệ quả logic, $KB_t \models \ell$ xảy
+ra khi và chỉ khi với mọi phép gán chân trị $M$, nếu $M$ làm thỏa toàn bộ các mệnh
+đề trong $KB_t$ ($M \models KB_t$) thì $M$ cũng đồng thời làm thỏa $\ell$
+($M \models \ell$). Phát biểu này tương đương logic với mệnh đề phủ định rằng
+không tồn tại bất kỳ phép gán $M$ nào làm thỏa $KB_t$ nhưng lại làm sai $\ell$
+(tức làm đúng $\neg \ell$). Nói cách khác, tập hợp mô hình của công thức hội
+$\mathrm{Models}(KB_t \wedge \neg \ell) = \emptyset$, đồng nghĩa
+$KB_t \wedge \neg \ell$ là không thỏa được. $\blacksquare$
 
-Mặc dù Định lý 1 cho phép chứng minh một chiều, việc chỉ thực hiện một phép thử đơn lẻ sẽ gặp bẫy logic nếu bản thân $KB_t$ chứa dữ liệu mâu thuẫn nội tại ($\text{MôHình}(KB_t) = \emptyset$), bởi khi đó nguyên lý bùng nổ khiến cả $KB_t \wedge \neg C_i$ lẫn $KB_t \wedge C_i$ đều đồng thời không thỏa được. Để bảo đảm an toàn tuyệt đối trước cả các tập dữ liệu lỗi, tác tử suy diễn đánh giá đầy đủ cặp kết quả khả thỏa dưới giả định phủ định $S^- = \text{KhảThỏa}(KB_t \wedge \neg C_i)$ và dưới giả định khẳng định $S^+ = \text{KhảThỏa}(KB_t \wedge C_i)$, từ đó phân loại chính xác từng ô chưa mở vào đúng một trong bốn phạm trù rời nhau trong Bảng \ref{tab:entailment_truth_table}.
+Mặc dù Định lý 1 cho phép chứng minh một chiều, việc chỉ thực hiện một phép thử
+đơn lẻ sẽ dẫn tới kết luận sai lệch nếu bản thân $KB_t$ chứa dữ liệu mâu thuẫn nội
+tại ($\mathrm{Models}(KB_t) = \emptyset$), bởi khi đó tính đơn điệu của phép hội
+khiến cả $KB_t \wedge \neg C_i$ lẫn $KB_t \wedge C_i$ đều đồng thời không thỏa
+được (nghịch lý suy diễn từ mâu thuẫn --- \textit{ex falso quodlibet}). Để bảo đảm
+tính chặt chẽ trước cả các tập dữ liệu lỗi, tác tử suy diễn đánh giá đầy đủ cặp
+kết quả khả thỏa dưới giả định phủ định $S^- = \mathrm{SAT}(KB_t \wedge \neg C_i)$
+và dưới giả định khẳng định $S^+ = \mathrm{SAT}(KB_t \wedge C_i)$, từ đó phân loại
+chính xác từng ô chưa mở vào đúng một trong bốn trạng thái kết luận đôi một rời
+nhau trong Bảng \ref{tab:entailment_truth_table}.
 
 \begin{table}[H]
 \centering
-\caption{Ma trận phân loại suy diễn bốn trạng thái cho ô $i$ dựa trên cặp truy vấn giả định ngược}
+\caption{%
+    Ma trận phân loại suy diễn bốn trạng thái cho ô $i$ dựa trên cặp truy vấn giả
+    định trái ngược}
 \label{tab:entailment_truth_table}
 \footnotesize
 \setlength{\tabcolsep}{5pt}
 \begin{tabularx}{\textwidth}{c c l >{\raggedright\arraybackslash}X}
 \toprule
-$\text{KhảThỏa}(KB_t \wedge \neg C_i)$ & $\text{KhảThỏa}(KB_t \wedge C_i)$ & \textbf{Kết luận phân loại} & \textbf{Diễn giải ngữ nghĩa hình thức} \\
+$\mathrm{SAT}(KB_t \wedge \neg C_i)$ & $\mathrm{SAT}(KB_t \wedge C_i)$ &
+\textbf{Kết luận phân loại} & \textbf{Diễn giải ngữ nghĩa hình thức} \\
 \midrule
-Không thỏa & Thỏa được  & \textbf{Tội phạm}       & $KB_t$ nhất quán và mọi mô hình của $KB_t$ đều buộc $C_i = \text{True}$. \\
-Thỏa được  & Không thỏa & \textbf{Vô tội}         & $KB_t$ nhất quán và mọi mô hình của $KB_t$ đều buộc $C_i = \text{False}$. \\
-Thỏa được  & Thỏa được  & \textbf{Chưa xác định}  & Tồn tại cả mô hình tội phạm lẫn mô hình vô tội; mọi phán quyết đều là đoán mò. \\
-Không thỏa & Không thỏa & \textbf{Mâu thuẫn}      & Tập manh mối hiện hành vô nghiệm ($\text{MôHình}(KB_t) = \emptyset$). \\
+Không thỏa & Thỏa được & \textbf{Tội phạm} & $KB_t$ nhất quán và mọi mô hình của
+$KB_t$ đều buộc $C_i = \text{True}$. \\
+Thỏa được & Không thỏa & \textbf{Vô tội} & $KB_t$ nhất quán và mọi mô hình của
+$KB_t$ đều buộc $C_i = \text{False}$. \\
+Thỏa được & Thỏa được & \textbf{Chưa xác định} & Tồn tại cả mô hình tội phạm lẫn
+mô hình vô tội; chưa đủ cơ sở chứng minh cho bên nào. \\
+Không thỏa & Không thỏa & \textbf{Mâu thuẫn} & Tập manh mối hiện hành vô nghiệm
+($\mathrm{Models}(KB_t) = \emptyset$). \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \subsection{Bộ nhớ đệm mô hình chứng nhân}
 \label{subsec:witness_cache}
-Nếu áp dụng trực tiếp Bảng \ref{tab:entailment_truth_table} một cách máy móc cho từng ô trong tập các ô chưa mở $U_t$, mỗi ô chưa đủ dữ kiện để kết luận luôn tiêu tốn hai lượt gọi bộ giải DPLL độc lập, đẩy tổng chi phí mỗi bước lên tới $2|U_t|$ truy vấn. Tuy nhiên, nhóm nhận thấy rằng mỗi khi một lượt gọi DPLL kết thúc với trạng thái thỏa được, nghiệm trả về $M$ không chỉ chứng thực riêng cho một biến đang xét mà thực chất là một \textbf{mô hình chứng nhân toàn cục} thỏa mãn đồng thời toàn bộ $KB_t$. Từ nhận thức này, nhóm đề xuất kỹ thuật lưu đệm các mô hình chứng nhân thu thập được ngay trong nội bộ bước $t$ để cắt tỉa sớm các truy vấn dư thừa trên những ô kế tiếp.
+Nếu áp dụng Bảng \ref{tab:entailment_truth_table} một cách trực tiếp (chưa tái sử
+dụng kết quả trung gian) cho từng ô trong tập các ô chưa mở $U_t$, mỗi ô chưa đủ
+dữ kiện để kết luận luôn tiêu tốn hai lượt gọi bộ giải DPLL độc lập, đẩy tổng chi
+phí mỗi bước lên tới $2|U_t|$ truy vấn. Tuy nhiên, nhóm nhận thấy rằng mỗi khi một
+lượt gọi DPLL kết thúc với trạng thái thỏa được, nghiệm trả về $M$ không chỉ xác
+nhận riêng cho một biến đang xét mà thực chất là một \textbf{mô hình chứng nhân
+toàn cục} (\textit{witness model} --- nghiệm mẫu thỏa mãn đồng thời toàn bộ
+$KB_t$). Từ nhận xét này, nhóm đề xuất kỹ thuật lưu đệm các mô hình chứng nhân thu
+thập được ngay trong nội bộ bước $t$ để cắt tỉa sớm các truy vấn dư thừa trên
+những ô kế tiếp.
 
-\noindent\textbf{Mệnh đề 2 (Tính đúng đắn của bộ nhớ đệm mô hình chứng nhân theo bước):}
-\textit{Xét tại một bước suy diễn cố định $t$ với cơ sở tri thức $KB_t$, giả sử tập mô hình chứng nhân $\mathcal{W}_t$ lưu giữ các mô hình $M$ sinh ra từ những lượt gọi DPLL thỏa được trước đó trong cùng bước $t$. Với mọi ô chưa mở $j \in U_t$ có biến mệnh đề tương ứng $v_j = \phi_N(j)$ nằm trong miền xác định của một mô hình $M \in \mathcal{W}_t$: nếu $M(v_j) = \text{True}$ thì công thức $KB_t \wedge C_j$ chắc chắn thỏa được mà không cần gọi lại bộ giải; tương tự, nếu $M(v_j) = \text{False}$ thì công thức $KB_t \wedge \neg C_j$ chắc chắn thỏa được.}
+\noindent\textbf{Mệnh đề 2 (Tính đúng đắn của bộ nhớ đệm mô hình chứng nhân theo
+bước):}
+\textit{Xét tại một bước suy diễn cố định $t$ với cơ sở tri thức $KB_t$, giả sử
+tập mô hình chứng nhân $\mathcal{W}_t$ lưu giữ các mô hình $M$ sinh ra từ những
+lượt gọi DPLL thỏa được trước đó trong cùng bước $t$. Với mọi ô chưa mở
+$j \in U_t$ có biến mệnh đề tương ứng $v_j = \phi_N(j)$ nằm trong miền xác định
+của một mô hình $M \in \mathcal{W}_t$: nếu $M(v_j) = \text{True}$ thì công thức
+$KB_t \wedge C_j$ chắc chắn thỏa được mà không cần gọi lại bộ giải; tương tự, nếu
+$M(v_j) = \text{False}$ thì công thức $KB_t \wedge \neg C_j$ chắc chắn thỏa được.}
 
 \noindent\textbf{Chứng minh:}
-Mỗi mô hình $M \in \mathcal{W}_t$ là đầu ra hợp lệ của giải thuật DPLL trên tập mệnh đề $KB_t$ kết hợp một giả định phụ nào đó $\mathcal{A}$, nghĩa là $M \models (KB_t \wedge \bigwedge_{\ell \in \mathcal{A}} \ell)$, suy ra tất yếu $M \models KB_t$. Khi biến $v_j$ thuộc miền xác định của $M$ và nhận giá trị $M(v_j) = \text{True}$, phép gán $M$ hiển nhiên làm đúng đồng thời cả $KB_t$ lẫn mệnh đề đơn $(C_j)$, chứng tỏ $\text{MôHình}(KB_t \wedge C_j) \ne \emptyset$. Lập luận hoàn toàn đối xứng cho trường hợp $M(v_j) = \text{False}$ kéo theo $M \models (KB_t \wedge \neg C_j)$. Đáng lưu ý, đối với những ô cô lập chưa từng xuất hiện trong bất kỳ lời khai nào của $KB_t$ ($v_j \notin \text{miền}(M)$), phép tra cứu chứng nhân trả về kết quả chưa được chứng kiến để buộc bộ giải thực hiện kiểm tra chuẩn xác, nhờ đó bảo toàn tính đúng đắn và tính đầy đủ $100\%$ so với phương pháp phản chứng gốc. $\blacksquare$
+Mỗi mô hình $M \in \mathcal{W}_t$ là đầu ra hợp lệ của giải thuật DPLL trên tập
+mệnh đề $KB_t$ kết hợp một giả định phụ nào đó $\mathcal{A}$, nghĩa là $M \models
+(KB_t \wedge \bigwedge_{\ell \in \mathcal{A}} \ell)$, suy ra $M \models KB_t$. Khi
+biến $v_j$ thuộc miền xác định của $M$ và nhận giá trị $M(v_j) = \text{True}$,
+phép gán $M$ hiển nhiên làm đúng đồng thời cả $KB_t$ lẫn mệnh đề đơn $(C_j)$,
+chứng tỏ $\mathrm{Models}(KB_t \wedge C_j) \ne \emptyset$. Lập luận tương tự theo
+tính đối xứng cho trường hợp $M(v_j) = \text{False}$ kéo theo $M \models (KB_t
+\wedge \neg C_j)$. Đáng lưu ý, đối với những ô cô lập chưa từng xuất hiện trong
+bất kỳ lời khai nào của $KB_t$ ($v_j \notin \mathrm{dom}(M)$), phép tra cứu bộ nhớ
+đệm trả về trạng thái chưa có nghiệm mẫu xác nhận để buộc bộ giải thực hiện kiểm
+tra đầy đủ, nhờ đó bảo toàn tính đúng đắn (\textit{soundness}) và tính đầy đủ
+(\textit{completeness}) so với phương pháp phản chứng gốc. $\blacksquare$
 
-Một chi tiết thiết kế sống còn bảo đảm tính toàn vẹn của cơ chế trên là \textbf{vòng đời của bộ nhớ đệm $\mathcal{W}_t$ bị giới hạn nghiêm ngặt trong phạm vi duy nhất một bước $t$}. Ngay khi tác tử tìm ra một ô bị ép buộc và mở thẻ để nhận thêm lời khai mới $c_{\text{mới}}$, cơ sở tri thức chuyển sang bước kế tiếp $KB_{t+1} = KB_t \wedge (\ell^*) \wedge \text{CNF}(c_{\text{mới}})$. Do tính chất đơn điệu của logic mệnh đề làm co hẹp không gian nghiệm $\text{MôHình}(KB_{t+1}) \subseteq \text{MôHình}(KB_t)$, các mô hình cũ trong $\mathcal{W}_t$ rất có thể vi phạm lời khai mới $c_{\text{mới}}$ và không còn hợp lệ ở bước $t + 1$. Chính vì vậy, việc khởi tạo mới hoàn toàn tập chứng nhân ở đầu mỗi chu kỳ quét giúp hệ thống vừa khai thác tối đa thông tin từ các mô hình đã giải, vừa miễn nhiễm tuyệt đối trước lỗi dùng lại chứng nhân lỗi thời.
+Một nguyên tắc thiết kế then chốt bảo đảm tính toàn vẹn của cơ chế trên là
+\textbf{vòng đời của bộ nhớ đệm $\mathcal{W}_t$ chỉ có hiệu lực trong phạm vi duy
+nhất một bước $t$}. Ngay khi tác tử tìm ra một ô có kết luận tất yếu và mở thẻ để
+nhận thêm lời khai mới $c_{\text{mới}}$, cơ sở tri thức chuyển sang bước kế tiếp
+$KB_{t+1} = KB_t \wedge (\ell^*) \wedge \text{CNF}(c_{\text{mới}})$. Do tính chất
+đơn điệu của logic mệnh đề làm thu hẹp không gian nghiệm $\mathrm{Models}(KB_{t+1})
+\subseteq \mathrm{Models}(KB_t)$, các mô hình cũ trong $\mathcal{W}_t$ có thể vi
+phạm lời khai mới $c_{\text{mới}}$ và không còn hợp lệ ở bước $t + 1$. Chính vì
+vậy, việc khởi tạo lại tập chứng nhân ở đầu mỗi chu kỳ quét giúp hệ thống vừa khai
+thác hiệu quả thông tin từ các mô hình đã giải, vừa loại bỏ nguy cơ sử dụng nhầm
+nghiệm mẫu đã lỗi thời.
 
 \subsection{Chu trình giải tự động và nghiệm duy nhất}
 \label{subsec:auto_loop_uniqueness}
-Kết hợp trọn vẹn các thành phần trên, chu trình suy diễn tự động toàn cục của tác tử được trình bày trong Thuật toán \ref{alg:logic_loop}. Ở từng vòng lặp, tác tử trích xuất trạng thái công khai mới nhất, biên dịch $KB_t$, khởi tạo tập chứng nhân rỗng $\mathcal{W}_t$ và duyệt tuần tự các ô chưa mở theo đúng thứ tự ưu tiên hàng ($\text{A1}, \text{B1}, \dots$). Ngay khi bắt gặp ô đầu tiên có một chiều giả định bị bác bỏ (chứng tỏ chiều ngược lại bị ép buộc tất yếu), tác tử lập tức dừng quét bước hiện tại, gửi phán quyết kèm chỉ số phiên bản để lật mở dữ kiện mới và lặp lại chu trình. Trái lại, nếu đã quét hết toàn bộ các ô chưa mở mà mọi ô đều rơi vào trạng thái chưa xác định, vòng lặp chủ động dừng lại an toàn và báo cáo trạng thái bế tắc do đa nghiệm thay vì liều lĩnh chọn bừa một nhánh.
+Kết hợp đầy đủ các thành phần trên, chu trình suy diễn tự động toàn cục của tác tử
+được trình bày trong Thuật toán \ref{alg:logic_loop}. Ở từng vòng lặp, tác tử trích
+xuất trạng thái công khai mới nhất, mã hóa $KB_t$, khởi tạo tập chứng nhân rỗng
+$\mathcal{W}_t$ và duyệt tuần tự các ô chưa mở theo đúng thứ tự ưu tiên hàng
+($\text{A1}, \text{B1}, \dots$). Ngay khi bắt gặp ô đầu tiên có một chiều giả định
+bị bác bỏ (chứng tỏ chiều ngược lại là hệ quả tất yếu), tác tử dừng quét bước hiện
+tại, gửi phán quyết kèm số hiệu phiên bản để lật mở dữ kiện mới và lặp lại chu
+trình. Trái lại, nếu đã quét hết các ô chưa mở mà mọi ô đều rơi vào trạng thái chưa
+xác định, vòng lặp chủ động dừng lại an toàn và trả về trạng thái thiếu dữ kiện
+chứng minh (\textsc{Stuck}) thay vì chọn ngẫu nhiên một nhánh chưa xác định.
 
 \begin{algorithm}[H]
-\caption{Chu trình suy diễn tự động nghiêm ngặt không đoán mò}
+\caption{Chu trình suy diễn tự động tuân thủ nguyên tắc không suy đoán}
 \label{alg:logic_loop}
 \footnotesize
 \begin{algorithmic}[1]
-\Require Môi trường quản trị ván đấu cung cấp bản chụp công khai và giao thức mở thẻ
-\Ensure Trạng thái kết thúc cùng hồ sơ vết suy diễn và thông số tích lũy qua từng bước
+\Require Môi trường điều hành ván đấu cung cấp trạng thái công khai và giao thức
+    mở thẻ
+\Ensure Trạng thái kết thúc cùng hồ sơ vết suy diễn và thông số tích lũy qua từng
+    bước
 \While{bàn cờ vẫn còn ô chưa được mở}
-    \If{thời gian thực thi vượt ngưỡng giới hạn cho phép} \Return \text{QuáHạnThờiGian} \EndIf
-    \State Trích xuất bản chụp trạng thái công khai $S_t$ và biên dịch cơ sở tri thức $KB_t$
-    \State $U_t \gets \text{SắpXếpƯuTiênHàng}(\text{CácÔChưaMở}(S_t))$; \quad $\mathcal{W}_t \gets \emptyset$
+    \If{thời gian thực thi vượt ngưỡng giới hạn cho phép}
+        \Return \textsc{Timeout}
+    \EndIf
+    \State Trích xuất trạng thái công khai $S_t$ và mã hóa cơ sở tri thức $KB_t$
+    \State $U_t \gets \textsc{Row-Major-Order}(\textsc{Unopened-Cells}(S_t))$;
+        \quad $\mathcal{W}_t \gets \emptyset$
     \State $u^* \gets \varnothing$; \quad $s^* \gets \varnothing$
     \For{mỗi ô $u \in U_t$ có mã biến $v = \phi_N(u)$}
-        \If{$\exists M \in \mathcal{W}_t : v \in \text{miền}(M) \wedge M(v) = \text{False}$}
+        \If{$\exists M \in \mathcal{W}_t :
+            v \in \mathrm{dom}(M) \wedge M(v) = \text{False}$}
             \State $S^- \gets \text{True}$
         \Else
-            \State $\langle S^-, M^- \rangle \gets \text{DPLL}(KB_t,\; (-v))$
+            \State $\langle S^-, M^- \rangle \gets \textsc{DPLL}(KB_t,\; (-v))$
             \If{$S^-$} $\mathcal{W}_t \gets \mathcal{W}_t \cup \{M^-\}$ \EndIf
         \EndIf
-        \If{$\exists M \in \mathcal{W}_t : v \in \text{miền}(M) \wedge M(v) = \text{True}$}
+        \If{$\exists M \in \mathcal{W}_t :
+            v \in \mathrm{dom}(M) \wedge M(v) = \text{True}$}
             \State $S^+ \gets \text{True}$
         \Else
-            \State $\langle S^+, M^+ \rangle \gets \text{DPLL}(KB_t,\; (+v))$
+            \State $\langle S^+, M^+ \rangle \gets \textsc{DPLL}(KB_t,\; (+v))$
             \If{$S^+$} $\mathcal{W}_t \gets \mathcal{W}_t \cup \{M^+\}$ \EndIf
         \EndIf
-        \If{$\neg S^- \wedge \neg S^+$} \Return \text{MâuThuẫnTriThức} \EndIf
+        \If{$\neg S^- \wedge \neg S^+$} \Return \textsc{Inconsistent} \EndIf
         \If{$\neg S^- \wedge S^+$}
-            \State $\langle u^*, s^* \rangle \gets \langle u, \text{TộiPhạm} \rangle$; \quad \textbf{break}
+            \State $\langle u^*, s^* \rangle \gets \langle u, \textsc{Criminal} \rangle$;
+                \quad \textbf{break}
         \ElsIf{$S^- \wedge \neg S^+$}
-            \State $\langle u^*, s^* \rangle \gets \langle u, \text{VôTội} \rangle$; \quad \textbf{break}
+            \State $\langle u^*, s^* \rangle \gets \langle u, \textsc{Innocent} \rangle$;
+                \quad \textbf{break}
         \EndIf
     \EndFor
     \If{$u^* = \varnothing$}
-        \State \Return \text{DừngDoĐaNghiệm} \Comment{Tuyệt đối không suy đoán khi chưa đủ dữ kiện}
+        \State \Return \textsc{Stuck}
+            \Comment{Không suy đoán khi dữ kiện hiện tại chưa đủ chứng minh}
     \EndIf
-    \State Xác nhận phán quyết $\langle u^*, s^* \rangle$ để mở lời khai kế tiếp và ghi vết bước giải
+    \State Xác nhận phán quyết $\langle u^*, s^* \rangle$ để mở lời khai kế tiếp
+        và ghi vết bước giải
 \EndWhile
-\State \Return \text{GiảiHoànTất}
+\State \Return \textsc{Solved}
 \end{algorithmic}
 \end{algorithm}
 
-Bên cạnh bài toán giải tuần tự theo tiến trình mở thẻ, hệ thống còn cung cấp quy trình \textbf{kiểm định tính duy nhất của nghiệm} trên toàn bộ lời khai của màn chơi nhằm thẩm định tính chặt chẽ của thiết kế câu đố chỉ với đúng hai lượt gọi bộ giải DPLL. Ở lượt thứ nhất, toàn bộ các lời khai cùng các ô mở sẵn ban đầu được mã hóa thành công thức $KB_{\text{toàn phần}}$ (tuyệt đối không đưa đáp án ẩn vào) để tìm nghiệm khả thỏa đầu tiên $M_1$. Nếu $KB_{\text{toàn phần}}$ vô nghiệm hoặc tồn tại bất kỳ biến gốc $v \in V_{\text{gốc}}$ nào không xuất hiện trong miền xác định của $M_1$ (đồng nghĩa biến đó hoàn toàn tự do và sinh ra ít nhất hai nghiệm khác nhau), quy trình kết luận ngay màn chơi không có nghiệm duy nhất. Ngược lại, từ nghiệm $M_1$, hệ thống kiến tạo một \textbf{mệnh đề chặn} ép buộc ít nhất một biến gốc trên bàn cờ phải nhận giá trị đối lập với $M_1$:
+Bên cạnh bài toán giải tuần tự theo tiến trình mở thẻ, hệ thống còn cung cấp quy
+trình \textbf{kiểm định tính duy nhất của nghiệm} trên toàn bộ lời khai của màn
+chơi nhằm kiểm chứng tính chặt chẽ của thiết kế câu đố chỉ với đúng hai lượt gọi
+bộ giải DPLL. Ở lượt thứ nhất, toàn bộ các lời khai cùng các ô mở sẵn ban đầu được
+mã hóa thành công thức $KB_{\text{đầy đủ}}$ (không sử dụng đáp án ẩn) để tìm
+nghiệm khả thỏa đầu tiên $M_1$. Nếu $KB_{\text{đầy đủ}}$ vô nghiệm hoặc tồn tại
+bất kỳ biến gốc $v \in V_{\text{gốc}}$ nào không xuất hiện trong miền xác định của
+$M_1$ (đồng nghĩa biến đó tự do và sinh ra ít nhất hai nghiệm khác nhau), quy
+trình kết luận ngay màn chơi không có nghiệm duy nhất. Ngược lại, từ nghiệm $M_1$,
+hệ thống thiết lập một \textbf{mệnh đề chặn} (\textit{blocking clause}) ép buộc ít
+nhất một biến gốc trên bàn cờ phải nhận giá trị đối lập với $M_1$:
 \begin{equation}
     B(M_1) \;=\; \bigvee_{v \in V_{\text{gốc}}} \ell_{\text{đảo}}(v, M_1), \qquad
     \ell_{\text{đảo}}(v, M_1) =
@@ -160,4 +304,6 @@ Bên cạnh bài toán giải tuần tự theo tiến trình mở thẻ, hệ th
     \end{cases}
     \label{eq:blocking_clause}
 \end{equation}
-Ở lượt gọi DPLL thứ hai trên công thức $KB_{\text{toàn phần}} \wedge B(M_1)$, màn chơi được chứng nhận sở hữu cấu hình thân phận duy nhất trên toàn bàn cờ khi và chỉ khi phép thử thứ hai này trả về kết quả không thỏa được.
+Ở lượt gọi DPLL thứ hai trên công thức $KB_{\text{đầy đủ}} \wedge B(M_1)$, màn
+chơi được xác nhận sở hữu cấu hình thân phận duy nhất trên toàn bàn cờ khi và chỉ
+khi phép thử thứ hai này trả về kết quả không thỏa được.

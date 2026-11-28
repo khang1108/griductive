@@ -1,57 +1,137 @@
 \section{Biểu diễn tri thức và mã hóa CNF}
 \label{sec:formulation}
 
-Để một bộ giải thỏa mãn mệnh đề tổng quát có thể tự động lập luận trên các lời khai ngôn ngữ của trò chơi, toàn bộ cấu trúc không gian của bàn cờ và hệ thống quy tắc manh mối cần được chuyển dịch nhất quán sang ngôn ngữ logic mệnh đề ở dạng chuẩn hội (CNF). Chương này trình bày hệ thống ánh xạ biến song ánh, đại số tập hợp mô tả vùng không gian, bảng tổng hợp công thức mã hóa và các phép biến đổi tương đương đại số từng bước cho từng họ ràng buộc.
+Để một bộ giải thỏa mãn mệnh đề tổng quát có thể tự động lập luận trên hệ thống
+lời khai có cấu trúc của trò chơi, toàn bộ tọa độ không gian của bàn cờ và tập quy
+tắc manh mối cần được chuyển đổi nhất quán sang ngôn ngữ logic mệnh đề ở dạng
+chuẩn hội (CNF). Chương này trình bày hệ thống ánh xạ biến song ánh, đại số tập
+hợp mô tả vùng không gian, bảng tổng hợp công thức mã hóa và các phép biến đổi
+tương đương đại số từng bước cho từng họ ràng buộc.
 
 \subsection{Không gian biến mệnh đề}
 \label{subsec:variable_mapping}
-Xét bàn cờ vuông kích thước $N \times N$ được mô hình hóa thành lưới tọa độ nguyên rời rạc hai chiều $\mathcal{G}_N = \{(r, c) \in \mathbb{Z}^2 \mid 0 \le r < N,\; 0 \le c < N\}$ gồm đúng $N^2$ ô phân biệt, trong đó chỉ số hàng $r$ tăng từ trên xuống dưới và chỉ số cột $c$ tăng từ trái sang phải (tương ứng với cách đánh nhãn cột bằng chữ cái in hoa $\text{A}, \text{B}, \dots$ và hàng bằng số thứ tự $1, 2, \dots$ trên mặt bàn điều tra). Với mỗi vị trí $(r, c) \in \mathcal{G}_N$, ta định nghĩa một biến mệnh đề gốc $C_{r,c} \in \{\text{True}, \text{False}\}$ mang ý nghĩa quyết định thân phận của nghi phạm đứng tại ô đó: biến $C_{r,c}$ nhận chân trị $\text{True}$ khi và chỉ khi nghi phạm là tội phạm, và nhận chân trị $\text{False}$ khi và chỉ khi nghi phạm là người vô tội. Do thân phận của mỗi nhân vật mang tính nhị phân loại trừ lẫn nhau và hoàn toàn bất biến xuyên suốt ván đấu, tập hợp $N^2$ biến mệnh đề gốc này đủ để đặc tả trọn vẹn mọi cấu hình nghiệm khả dĩ của bàn cờ trong không gian trạng thái kích thước $2^{N^2}$.
+Xét bàn cờ vuông kích thước $N \times N$ được mô hình hóa thành lưới tọa độ nguyên
+rời rạc hai chiều $\mathcal{G}_N = \{(r, c) \in \mathbb{Z}^2 \mid 0 \le r < N,\; 0
+\le c < N\}$ gồm đúng $N^2$ ô phân biệt, trong đó chỉ số hàng $r$ tăng từ trên
+xuống dưới và chỉ số cột $c$ tăng từ trái sang phải (tương ứng với cách đánh nhãn
+cột bằng chữ cái in hoa $\text{A}, \text{B}, \dots$ và hàng bằng số thứ tự
+$1, 2, \dots$ trên mặt bàn điều tra). Với mỗi vị trí $(r, c) \in \mathcal{G}_N$,
+ta định nghĩa một biến mệnh đề gốc $C_{r,c} \in \{\text{True}, \text{False}\}$
+biểu thị thân phận của nghi phạm đứng tại ô đó: biến $C_{r,c}$ nhận chân trị
+$\text{True}$ khi và chỉ khi nghi phạm là tội phạm, và nhận chân trị $\text{False}$
+khi và chỉ khi nghi phạm là người vô tội. Do thân phận của mỗi nhân vật mang tính
+nhị phân loại trừ lẫn nhau và bất biến xuyên suốt ván đấu, tập hợp $N^2$ biến mệnh
+đề gốc này đủ để đặc tả đầy đủ mọi cấu hình nghiệm khả dĩ của bàn cờ trong không
+gian trạng thái kích thước $2^{N^2}$.
 
-Nhằm chuẩn hóa dữ liệu đầu vào cho bộ giải mệnh đề theo quy ước số nguyên khác không của chuẩn DIMACS (với số nguyên dương $+v$ biểu thị literal khẳng định $x_v$ và số nguyên âm $-v$ biểu thị literal phủ định $\neg x_v$), hệ thống thiết lập ánh xạ song ánh theo thứ tự ưu tiên hàng từ miền tọa độ hai chiều sang miền số nguyên dương liên tiếp:
+Nhằm chuẩn hóa dữ liệu đầu vào cho bộ giải mệnh đề theo quy ước số nguyên khác
+không của chuẩn DIMACS (với số nguyên dương $+v$ biểu thị literal khẳng định $x_v$
+và số nguyên âm $-v$ biểu thị literal phủ định $\neg x_v$), hệ thống thiết lập ánh
+xạ song ánh theo thứ tự ưu tiên hàng (\textit{row-major}, duyệt từng hàng từ trên
+xuống và từ trái sang phải) từ miền tọa độ hai chiều sang miền số nguyên dương
+liên tiếp:
 \begin{equation}
-    \phi_N : \mathcal{G}_N \to \{1, 2, \dots, N^2\}, \qquad \phi_N(r, c) = r \cdot N + c + 1
+    \phi_N : \mathcal{G}_N \to \{1, 2, \dots, N^2\}, \qquad
+    \phi_N(r, c) = r \cdot N + c + 1
     \label{eq:var_map}
 \end{equation}
-đi kèm phép chiếu ngược duy nhất giúp khôi phục tọa độ lưới từ bất kỳ định danh biến gốc nào:
+đi kèm phép chiếu ngược duy nhất giúp khôi phục tọa độ lưới từ bất kỳ định danh
+biến gốc nào:
 \begin{equation}
-    \phi_N^{-1}(v) = \left(\left\lfloor \frac{v - 1}{N} \right\rfloor,\; (v - 1) \bmod N\right), \qquad \forall v \in \{1, 2, \dots, N^2\}.
+    \phi_N^{-1}(v) = \left(
+        \left\lfloor \frac{v - 1}{N} \right\rfloor,\; (v - 1) \bmod N
+    \right), \qquad \forall v \in \{1, 2, \dots, N^2\}.
 \end{equation}
-Bên cạnh tập biến gốc $V_{\text{gốc}} = \{1, 2, \dots, N^2\}$ gắn trực tiếp với các ô trên mặt bàn, một số phép biến đổi cấu trúc nâng cao như mạch chẵn lẻ tuyến tính cần sinh thêm các biến trung gian Tseitin để tránh bùng nổ số lượng mệnh đề \cite{tseitin1983complexity}. Các biến trung gian này được cấp phát tuần tự tăng dần bắt đầu từ $N^2 + 1$, tạo thành tập biến phụ trợ $V_{\text{phụ}} = \{N^2 + 1, N^2 + 2, \dots, N^2 + K\}$ rời nhau hoàn toàn với tập biến gốc ($V_{\text{gốc}} \cap V_{\text{phụ}} = \emptyset$). Cách phân hoạch không gian định danh chặt chẽ này vừa loại bỏ hoàn toàn nguy cơ đụng độ ký hiệu khi hợp nhất nhiều manh mối độc lập, vừa cho phép quy trình kiểm định nghiệm duy nhất chỉ cần xét sự biến thiên chân trị trên $V_{\text{gốc}}$ mà không bị phụ thuộc vào các biến trung gian nội bộ.
+Bên cạnh tập biến gốc $V_{\text{gốc}} = \{1, 2, \dots, N^2\}$ gắn trực tiếp với
+các ô trên mặt bàn, một số phép biến đổi cấu trúc nâng cao như mạch chẵn lẻ tuyến
+tính cần sinh thêm các biến trung gian Tseitin để tránh bùng nổ số lượng mệnh đề
+\cite{tseitin1983complexity}. Các biến trung gian này được cấp phát tuần tự tăng
+dần bắt đầu từ $N^2 + 1$, tạo thành tập biến phụ trợ $V_{\text{phụ}} = \{N^2 + 1,
+N^2 + 2, \dots, N^2 + K\}$ đôi một rời nhau với tập biến gốc ($V_{\text{gốc}}
+\cap V_{\text{phụ}} = \emptyset$). Cách phân hoạch không gian định danh chặt chẽ
+này vừa loại bỏ nguy cơ trùng lặp định danh biến khi hợp nhất nhiều manh mối độc
+lập, vừa cho phép quy trình kiểm định nghiệm duy nhất chỉ cần xét sự biến thiên
+chân trị trên $V_{\text{gốc}}$ mà không bị phụ thuộc vào các biến trung gian nội
+bộ.
 
 \subsection{Đại số vùng không gian}
 \label{subsec:region_algebra}
-Phần lớn các lời khai mang tính khái quát trong trò chơi không chỉ đích danh một cá nhân đơn lẻ mà áp đặt điều kiện định lượng lên một nhóm nghi phạm cùng chia sẻ thuộc tính vị trí trên lưới. Thay vì liệt kê thủ công từng ô cho mỗi loại manh mối, hệ thống xây dựng một đại số vùng hình học cho phép biểu diễn mọi miền tác động thông qua hàm phân giải tập hợp $\mathcal{R}_N(\cdot) \subseteq \mathcal{G}_N$ trả về danh sách các tọa độ không trùng lặp được sắp xếp chuẩn hóa theo thứ tự ưu tiên hàng. Ở cấp độ cơ sở, bốn miền hình học nguyên thủy bao gồm vùng hàng thứ $r_0$ được xác định bởi $\mathcal{R}_N(\text{Hàng}(r_0)) = \{(r_0, c) \mid 0 \le c < N\}$, vùng cột thứ $c_0$ được xác định bởi $\mathcal{R}_N(\text{Cột}(c_0)) = \{(r, c_0) \mid 0 \le r < N\}$, vùng liệt kê tường minh chứa một tập con tọa độ cho trước $S \subseteq \mathcal{G}_N$, và vùng lân cận tám hướng xung quanh tâm $(r_0, c_0)$ dựa trên khoảng cách Chebyshev bằng đơn vị (không tính bản thân ô tâm):
+Phần lớn các lời khai mang tính khái quát trong trò chơi không chỉ đích danh một
+cá nhân đơn lẻ mà áp đặt điều kiện định lượng lên một nhóm nghi phạm cùng chia sẻ
+thuộc tính vị trí trên lưới. Thay vì liệt kê thủ công từng ô cho mỗi loại manh
+mối, hệ thống xây dựng một đại số vùng hình học cho phép biểu diễn mọi miền tham
+chiếu thông qua hàm xác định miền tọa độ $\mathcal{R}_N(\cdot) \subseteq
+\mathcal{G}_N$ trả về danh sách các tọa độ không trùng lặp được sắp xếp chuẩn hóa
+theo thứ tự ưu tiên hàng. Ở mức nền tảng, bốn kiểu vùng cơ sở bao gồm vùng hàng
+thứ $r_0$ được xác định bởi $\mathcal{R}_N(\text{Hàng}(r_0)) = \{(r_0, c) \mid 0
+\le c < N\}$, vùng cột thứ $c_0$ được xác định bởi $\mathcal{R}_N(\text{Cột}(c_0))
+= \{(r, c_0) \mid 0 \le r < N\}$, vùng liệt kê tường minh chứa một tập con tọa độ
+cho trước $S \subseteq \mathcal{G}_N$, và vùng lân cận tám hướng xung quanh tâm
+$(r_0, c_0)$ dựa trên khoảng cách Chebyshev bằng $1$ (không tính bản thân ô tâm):
 \begin{equation}
-    \mathcal{R}_N(\text{LânCận}(r_0, c_0)) = \{(r, c) \in \mathcal{G}_N \mid \max(|r - r_0|,\, |c - c_0|) = 1\}.
+    \mathcal{R}_N(\text{Lân cận}(r_0, c_0)) = \{
+        (r, c) \in \mathcal{G}_N \mid \max(|r - r_0|,\, |c - c_0|) = 1
+    \}.
 \end{equation}
-Tùy thuộc vào việc nhân vật làm tâm đứng ở bốn góc bàn cờ, nằm dọc theo rìa biên hay đứng hẳn bên trong lõi lưới, lực lượng của vùng lân cận tự động co giãn chính xác nhận các giá trị lần lượt bằng $3$, $5$ hoặc $8$ ô.
+Tùy thuộc vào việc nhân vật làm tâm nằm ở bốn góc bàn cờ, dọc theo biên hay nằm
+bên trong lưới, số lượng ô thuộc vùng lân cận nhận giá trị lần lượt bằng $3$, $5$
+hoặc $8$.
 
-Không dừng lại ở các miền đơn lẻ, nhóm mở rộng đáng kể sức biểu đạt của ngôn ngữ lời khai thông qua phép toán \textbf{giao hai vùng bất kỳ} (phần mở rộng thứ nhất của hệ thống biểu diễn tri thức). Với hai biểu thức vùng thành phần $R_1$ và $R_2$, miền giao hợp thành được định nghĩa đệ quy bằng phép giao lý thuyết tập hợp $\mathcal{R}_N(\text{Giao}(R_1, R_2)) = \mathcal{R}_N(R_1) \cap \mathcal{R}_N(R_2)$ và tiếp tục bảo toàn thứ tự sắp xếp chuẩn hóa. Nhờ tính đóng của đại số tập hợp này, các phát biểu giao thoa không gian thường gặp trong các vụ án phức tạp --- chẳng hạn lời khai \textit{``Có đúng một tội phạm trong số những người vừa đứng ở hàng thứ hai vừa tiếp giáp trực tiếp với nghi phạm $\text{B1}$''} --- được rút gọn tự nhiên về một miền con xác định trước khi đưa vào bộ sinh mệnh đề, giúp tách bạch hoàn toàn bài toán hình học lưới khỏi bài toán biên dịch đại số Boole phía sau.
+Không dừng lại ở các miền đơn lẻ, nhóm mở rộng sức biểu đạt của ngôn ngữ lời khai
+thông qua phép toán \textbf{giao hai vùng bất kỳ} (phần mở rộng thứ nhất của hệ
+thống biểu diễn tri thức). Với hai biểu thức vùng thành phần $R_1$ và $R_2$, miền
+giao tạo thành được định nghĩa đệ quy bằng phép giao lý thuyết tập hợp
+$\mathcal{R}_N(\text{Giao}(R_1, R_2)) = \mathcal{R}_N(R_1) \cap
+\mathcal{R}_N(R_2)$ và tiếp tục bảo toàn thứ tự sắp xếp chuẩn hóa. Nhờ tính đóng
+của đại số tập hợp này, các phát biểu giao thoa không gian thường gặp trong các vụ
+án phức tạp --- chẳng hạn lời khai \textit{``Có đúng một tội phạm trong số những
+người vừa đứng ở hàng thứ hai vừa tiếp giáp trực tiếp với nghi phạm $\text{B1}$''}
+--- được rút gọn tự nhiên về một miền con xác định trước khi đưa vào bộ mã hóa
+CNF, giúp tách bạch bài toán hình học lưới khỏi bài toán chuyển đổi đại số Boole
+phía sau.
 
 \subsection{Hệ thống manh mối và công thức CNF}
 \label{subsec:clue_catalog}
-Trên nền tảng biến mệnh đề và đại số vùng đã xác lập, hệ thống hỗ trợ đầy đủ sáu khuôn mẫu lời khai cốt lõi của trò chơi (gồm khẳng định đơn, đồng nhất trạng thái, đối lập trạng thái, tối thiểu $k$ tội phạm, tối đa $k$ tội phạm, và chính xác $k$ tội phạm) cùng khuôn mẫu mở rộng thứ hai là \textbf{ràng buộc tính chẵn lẻ số lượng tội phạm trên vùng} (chẵn hoặc lẻ). Bảng \ref{tab:cnf_catalog} tổng hợp bức tranh đối chiếu toàn diện giữa biểu thức ngữ nghĩa gốc, dạng chuẩn hội tương đương và quy mô số mệnh đề sinh ra theo kích thước vùng $m = |R|$.
+Trên nền tảng biến mệnh đề và đại số vùng đã xác lập, hệ thống hỗ trợ đầy đủ sáu
+khuôn mẫu lời khai cốt lõi của trò chơi (gồm khẳng định đơn, đồng nhất trạng thái,
+đối lập trạng thái, tối thiểu $k$ tội phạm, tối đa $k$ tội phạm, và chính xác $k$
+tội phạm) cùng khuôn mẫu mở rộng thứ hai là \textbf{ràng buộc tính chẵn lẻ số
+lượng tội phạm trên vùng} (chẵn hoặc lẻ). Bảng \ref{tab:cnf_catalog} trình bày
+đối chiếu giữa biểu thức ngữ nghĩa gốc, dạng chuẩn hội tương đương và quy mô số
+mệnh đề sinh ra theo kích thước vùng $m = |R|$.
 
 \begin{table}[H]
 \centering
-\caption{Tổng hợp ngữ nghĩa toán học và công thức dạng chuẩn hội (CNF) cho sáu mẫu cốt lõi và mẫu mở rộng chẵn lẻ}
+\caption{%
+    Tổng hợp ngữ nghĩa toán học và công thức dạng chuẩn hội (CNF) cho sáu mẫu cốt
+    lõi và mẫu mở rộng chẵn lẻ}
 \label{tab:cnf_catalog}
 \footnotesize
 \begin{tabularx}{\textwidth}{l l >{\raggedright\arraybackslash}X r}
 \toprule
-\textbf{Họ manh mối} & \textbf{Biểu thức logic} & \textbf{Dạng chuẩn hội (CNF) tương đương} & \textbf{Số mệnh đề} \\
+\textbf{Họ manh mối} & \textbf{Biểu thức logic} & \textbf{Dạng chuẩn hội (CNF)
+tương đương} & \textbf{Số mệnh đề} \\
 \midrule
 Khẳng định tội phạm & $C_u$ & $(C_u)$ & $1$ \\
 Khẳng định vô tội   & $\neg C_u$ & $(\neg C_u)$ & $1$ \\
 \midrule
-Đồng nhất trạng thái & $C_u \leftrightarrow C_v$ & $(\neg C_u \vee C_v) \wedge (C_u \vee \neg C_v)$ & $2$ \\
-Đối lập trạng thái   & $C_u \oplus C_v$ & $(C_u \vee C_v) \wedge (\neg C_u \vee \neg C_v)$ & $2$ \\
+Đồng nhất trạng thái & $C_u \leftrightarrow C_v$ & $(\neg C_u \vee C_v) \wedge
+(C_u \vee \neg C_v)$ & $2$ \\
+Đối lập trạng thái & $C_u \oplus C_v$ & $(C_u \vee C_v) \wedge (\neg C_u \vee \neg
+C_v)$ & $2$ \\
 \midrule
-Tối thiểu $k$ tội phạm & $\sum_{x \in R} C_x \ge k$ & $\bigwedge_{S \in \binom{R}{m - k + 1}} \left(\bigvee_{x \in S} C_x\right)$ với $m = |R|$ & $\binom{m}{m-k+1}$ \\
-Tối đa $k$ tội phạm    & $\sum_{x \in R} C_x \le k$ & $\bigwedge_{S \in \binom{R}{k + 1}} \left(\bigvee_{x \in S} \neg C_x\right)$ với $m = |R|$ & $\binom{m}{k+1}$ \\
-Chính xác $k$ tội phạm & $\sum_{x \in R} C_x = k$ & Kết hợp hội của ràng buộc tối thiểu $k$ và tối đa $k$ trên cùng vùng $R$ & $\binom{m}{m-k+1} + \binom{m}{k+1}$ \\
+Tối thiểu $k$ tội phạm & $\sum_{x \in R} C_x \ge k$ & $\bigwedge_{S \in
+\binom{R}{m - k + 1}} \left(\bigvee_{x \in S} C_x\right)$ với $m = |R|$ &
+$\binom{m}{m-k+1}$ \\
+Tối đa $k$ tội phạm & $\sum_{x \in R} C_x \le k$ & $\bigwedge_{S \in \binom{R}{k +
+1}} \left(\bigvee_{x \in S} \neg C_x\right)$ với $m = |R|$ & $\binom{m}{k+1}$ \\
+Chính xác $k$ tội phạm & $\sum_{x \in R} C_x = k$ & Kết hợp hội của ràng buộc tối
+thiểu $k$ và tối đa $k$ trên cùng vùng $R$ & $\binom{m}{m-k+1} + \binom{m}{k+1}$ \\
 \midrule
-Chẵn lẻ vùng ($p \in \{0, 1\}$) & $\left(\sum_{x \in R} C_x\right) \bmod 2 = p$ & Chuỗi biến phụ $y_t \leftrightarrow (y_{t-1} \oplus C_{x_{t+1}})$ ghép với điều kiện khóa đuôi chẵn ($y_{m-2} \leftrightarrow C_{x_m}$) hoặc lẻ ($y_{m-2} \oplus C_{x_m}$) & $4m - 6$ \newline \scriptsize ($m \ge 2$) \\
+Chẵn lẻ vùng ($p \in \{0, 1\}$) & $\left(\sum_{x \in R} C_x\right) \bmod 2 = p$ &
+Chuỗi biến phụ $y_t \leftrightarrow (y_{t-1} \oplus C_{x_{t+1}})$ ghép với điều
+kiện chốt cuối chuỗi chẵn ($y_{m-2} \leftrightarrow C_{x_m}$) hoặc lẻ
+($y_{m-2} \oplus C_{x_m}$) & $4m - 6$ \newline \scriptsize ($m \ge 2$) \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -60,84 +140,203 @@ Chẵn lẻ vùng ($p \in \{0, 1\}$) & $\left(\sum_{x \in R} C_x\right) \bmod 2 
 \label{subsec:step_by_step_derivations}
 
 \subsubsection{Nhóm manh mối quan hệ nhị phân}
-Đối với nhóm manh mối thiết lập sự phụ thuộc trực tiếp giữa hai nghi phạm phân biệt $u, v \in \mathcal{G}_N$ ($u \ne v$), quá trình chuyển đổi sang dạng chuẩn hội được dẫn xuất chặt chẽ bằng các luật tương đương cổ điển của đại số mệnh đề. Trước hết, xét lời khai đồng nhất khẳng định rằng $u$ và $v$ mang cùng thân phận, được biểu diễn bởi phép tương đương kép $C_u \leftrightarrow C_v$. Áp dụng lần lượt luật phân rã tương đương thành hội của hai phép kéo theo, luật khử phép kéo theo ($P \to Q \equiv \neg P \vee Q$) và tính giao hoán của phép tuyển, ta thu được biến đổi tương đương từng bước:
+Đối với nhóm manh mối thiết lập sự phụ thuộc trực tiếp giữa hai nghi phạm phân
+biệt $u, v \in \mathcal{G}_N$ ($u \ne v$), quá trình chuyển đổi sang dạng chuẩn
+hội được dẫn xuất chặt chẽ bằng các luật tương đương cổ điển của đại số mệnh đề.
+Trước hết, xét lời khai đồng nhất khẳng định rằng $u$ và $v$ mang cùng thân phận,
+được biểu diễn bởi phép tương đương kép $C_u \leftrightarrow C_v$. Áp dụng lần
+lượt luật phân rã tương đương thành hội của hai phép kéo theo, luật khử phép kéo
+theo ($P \to Q \equiv \neg P \vee Q$) và tính giao hoán của phép tuyển, ta thu
+được biến đổi tương đương từng bước:
 \begin{align}
     F_{\text{đồng nhất}}(u, v) &\equiv (C_u \leftrightarrow C_v) \nonumber\\
-    &\equiv (C_u \to C_v) \wedge (C_v \to C_u) && \text{(Phân rã tương đương hai chiều)} \nonumber\\
-    &\equiv (\neg C_u \vee C_v) \wedge (\neg C_v \vee C_u) && \text{(Khử phép kéo theo)} \nonumber\\
-    &\equiv (\neg C_u \vee C_v) \wedge (C_u \vee \neg C_v). && \text{(Sắp xếp chuẩn hóa thứ tự biến)}
+    &\equiv (C_u \to C_v) \wedge (C_v \to C_u)
+        && \text{(Phân rã tương đương hai chiều)} \nonumber\\
+    &\equiv (\neg C_u \vee C_v) \wedge (\neg C_v \vee C_u)
+        && \text{(Khử phép kéo theo)} \nonumber\\
+    &\equiv (\neg C_u \vee C_v) \wedge (C_u \vee \neg C_v).
+        && \text{(Sắp xếp chuẩn hóa thứ tự biến)}
     \label{eq:cnf_same}
 \end{align}
-Chẳng hạn trên bàn cờ $3 \times 3$, lời khai khẳng định hai ô $\text{A2}$ và $\text{B2}$ cùng phe sẽ ánh xạ qua $\phi_3(\text{A2}) = 4$ và $\phi_3(\text{B2}) = 5$ thành hai mệnh đề bậc hai $(-4, 5)$ và $(4, -5)$. Ngay khi một trong hai ô được chứng minh mang một trạng thái cụ thể, một mệnh đề sẽ tự động thỏa mãn trong khi mệnh đề còn lại co về mệnh đề đơn vị, lập tức truyền trạng thái giống hệt sang ô kia.
+Chẳng hạn trên bàn cờ $3 \times 3$, lời khai khẳng định hai ô $\text{A2}$ và
+$\text{B2}$ cùng phe sẽ ánh xạ qua $\phi_3(\text{A2}) = 4$ và
+$\phi_3(\text{B2}) = 5$ thành hai mệnh đề bậc hai $(-4, 5)$ và $(4, -5)$. Ngay khi
+một trong hai ô được chứng minh mang một trạng thái cụ thể, một mệnh đề sẽ tự động
+thỏa mãn trong khi mệnh đề còn lại rút gọn thành mệnh đề đơn vị, lập tức truyền
+trạng thái giống hệt sang ô kia.
 
-Tiếp nối cách biến đổi trên, lời khai đối lập khẳng định $u$ và $v$ thuộc hai phe trái ngược nhau được biểu diễn thông qua phép tuyển loại trừ $C_u \oplus C_v \equiv (C_u \wedge \neg C_v) \vee (\neg C_u \wedge C_v)$. Để đưa biểu thức dạng chuẩn tuyển này về dạng chuẩn hội, ta áp dụng luật phân phối của phép tuyển đối với phép hội kết hợp luật bài trung ($P \vee \neg P \equiv \top$):
+Tiếp nối cách biến đổi trên, lời khai đối lập khẳng định $u$ và $v$ thuộc hai phe
+trái ngược nhau được biểu diễn thông qua phép tuyển loại trừ (XOR) $C_u \oplus C_v
+\equiv (C_u \wedge \neg C_v) \vee (\neg C_u \wedge C_v)$. Để đưa biểu thức dạng
+chuẩn tuyển này về dạng chuẩn hội, ta áp dụng luật phân phối của phép tuyển đối
+với phép hội kết hợp luật bài trung ($P \vee \neg P \equiv \top$):
 \begin{align}
-    F_{\text{đối lập}}(u, v) &\equiv (C_u \wedge \neg C_v) \vee (\neg C_u \wedge C_v) \nonumber\\
-    &\equiv \big((C_u \wedge \neg C_v) \vee \neg C_u\big) \wedge \big((C_u \wedge \neg C_v) \vee C_v\big) & \text{\footnotesize (Phân phối lần 1)} \nonumber\\
-    &\equiv (C_u \vee \neg C_u) \wedge (\neg C_v \vee \neg C_u) \wedge (C_u \vee C_v) \wedge (\neg C_v \vee C_v) & \text{\footnotesize (Phân phối lần 2)} \nonumber\\
-    &\equiv \top \wedge (\neg C_u \vee \neg C_v) \wedge (C_u \vee C_v) \wedge \top & \text{\footnotesize (Luật bài trung)} \nonumber\\
+    F_{\text{đối lập}}(u, v)
+    &\equiv (C_u \wedge \neg C_v) \vee (\neg C_u \wedge C_v) \nonumber\\
+    &\equiv \big((C_u \wedge \neg C_v) \vee \neg C_u\big)
+        \wedge \big((C_u \wedge \neg C_v) \vee C_v\big)
+        & \text{\footnotesize (Phân phối lần 1)} \nonumber\\
+    &\equiv (C_u \vee \neg C_u) \wedge (\neg C_v \vee \neg C_u)
+        \wedge (C_u \vee C_v) \wedge (\neg C_v \vee C_v)
+        & \text{\footnotesize (Phân phối lần 2)} \nonumber\\
+    &\equiv \top \wedge (\neg C_u \vee \neg C_v)
+        \wedge (C_u \vee C_v) \wedge \top
+        & \text{\footnotesize (Luật bài trung)} \nonumber\\
     &\equiv (C_u \vee C_v) \wedge (\neg C_u \vee \neg C_v).
     \label{eq:cnf_diff}
 \end{align}
-Hai mệnh đề thu được phản ánh trực quan hai mặt của sự đối lập: mệnh đề $(C_u \vee C_v)$ buộc ít nhất một trong hai người phải là tội phạm, trong khi mệnh đề $(\neg C_u \vee \neg C_v)$ ngăn không cho cả hai đồng thời là tội phạm.
+Hai mệnh đề thu được phản ánh trực quan hai mặt của sự đối lập: mệnh đề
+$(C_u \vee C_v)$ buộc ít nhất một trong hai người phải là tội phạm, trong khi mệnh
+đề $(\neg C_u \vee \neg C_v)$ ngăn không cho cả hai đồng thời là tội phạm.
 
-\subsubsection{Nhóm manh mối đếm lực lượng vùng}
-Chuyển sang nhóm manh mối định lượng trên vùng $R = \{x_1, x_2, \dots, x_m\}$ gồm $m = |R|$ ô phân biệt với ngưỡng nguyên không âm $k \ge 0$, nguyên lý biên dịch sang dạng chuẩn hội dựa trên việc loại trừ mọi tập con nhỏ nhất gây vi phạm ngưỡng đếm. Đối với ràng buộc cận trên yêu cầu có tối đa $k$ tội phạm trong vùng $R$, một phép gán chân trị vi phạm điều kiện này khi và chỉ khi tồn tại ít nhất một tập con $S \subseteq R$ gồm đúng $k + 1$ phần tử mà mọi biến trong $S$ đều đồng thời nhận giá trị $\text{True}$. Gọi $\binom{R}{k+1}$ là họ tất cả các tập con kích thước $k + 1$ trích ra từ $R$, phép phủ định điều kiện vi phạm kết hợp định luật De Morgan tổng quát cho ta chuỗi biến đổi tương đương:
+\subsubsection{Nhóm manh mối đếm số lượng trên vùng}
+Chuyển sang nhóm manh mối định lượng trên vùng $R = \{x_1, x_2, \dots, x_m\}$ gồm
+$m = |R|$ ô phân biệt với ngưỡng nguyên không âm $k \ge 0$, nguyên lý mã hóa sang
+dạng chuẩn hội dựa trên việc loại trừ mọi tập con nhỏ nhất gây vi phạm ngưỡng đếm
+(\textit{cardinality constraint}). Đối với ràng buộc cận trên yêu cầu có tối đa
+$k$ tội phạm trong vùng $R$, một phép gán chân trị vi phạm điều kiện này khi và
+chỉ khi tồn tại ít nhất một tập con $S \subseteq R$ gồm đúng $k + 1$ phần tử mà
+mọi biến trong $S$ đều đồng thời nhận giá trị $\text{True}$. Gọi $\binom{R}{k+1}$
+là họ tất cả các tập con kích thước $k + 1$ trích ra từ $R$, phép phủ định điều
+kiện vi phạm kết hợp định luật De Morgan tổng quát cho ta chuỗi biến đổi tương
+đương:
 \begin{align}
     \sum_{i=1}^{m} \mathbb{I}[C_{x_i}] \le k
-    &\iff \neg \left( \bigvee_{S \in \binom{R}{k+1}} \bigwedge_{x \in S} C_x \right) && \text{(Cấm mọi tổ hợp $k+1$ tội phạm)} \nonumber\\
-    &\iff \bigwedge_{S \in \binom{R}{k+1}} \neg \left( \bigwedge_{x \in S} C_x \right) && \text{(Định luật De Morgan ngoài)} \nonumber\\
-    &\iff \bigwedge_{S \in \binom{R}{k+1}} \left( \bigvee_{x \in S} \neg C_x \right). && \text{(Định luật De Morgan trong)}
+    &\iff \neg \left( \bigvee_{S \in \binom{R}{k+1}} \bigwedge_{x \in S} C_x \right)
+        && \text{(Loại trừ mọi tập con $k+1$ tội phạm)} \nonumber\\
+    &\iff \bigwedge_{S \in \binom{R}{k+1}} \neg \left( \bigwedge_{x \in S} C_x \right)
+        && \text{(Định luật De Morgan ngoài)} \nonumber\\
+    &\iff \bigwedge_{S \in \binom{R}{k+1}} \left( \bigvee_{x \in S} \neg C_x \right).
+        && \text{(Định luật De Morgan trong)}
     \label{eq:at_most_cnf}
 \end{align}
-Bằng lập luận đối ngẫu hoàn toàn tương tự, yêu cầu có tối thiểu $k$ tội phạm trong vùng $m$ ô tương đương logic với việc có tối đa $m - k$ người vô tội trong vùng đó, tức $\sum_{i=1}^{m} \mathbb{I}[\neg C_{x_i}] \le m - k$. Thay thế mỗi biến $C_x$ bởi $\neg C_x$ và thay ngưỡng $k$ bởi $m - k$ vào Phương trình \eqref{eq:at_most_cnf} rồi rút gọn phủ định kép $\neg(\neg C_x) \equiv C_x$, ta dẫn xuất được công thức cận dưới gồm $\binom{m}{m-k+1}$ mệnh đề toàn dương:
+Bằng lập luận đối ngẫu tương tự, yêu cầu có tối thiểu $k$ tội phạm trong vùng $m$
+ô tương đương logic với việc có tối đa $m - k$ người vô tội trong vùng đó, tức
+$\sum_{i=1}^{m} \mathbb{I}[\neg C_{x_i}] \le m - k$. Thay thế mỗi biến $C_x$ bởi
+$\neg C_x$ và thay ngưỡng $k$ bởi $m - k$ vào Phương trình \eqref{eq:at_most_cnf}
+rồi rút gọn phủ định kép $\neg(\neg C_x) \equiv C_x$, ta dẫn xuất được công thức
+cận dưới gồm $\binom{m}{m-k+1}$ mệnh đề toàn dương:
 \begin{equation}
-    \sum_{i=1}^{m} \mathbb{I}[C_{x_i}] \ge k \iff \bigwedge_{S \in \binom{R}{m-k+1}} \left( \bigvee_{x \in S} C_x \right).
+    \sum_{i=1}^{m} \mathbb{I}[C_{x_i}] \ge k
+    \iff \bigwedge_{S \in \binom{R}{m-k+1}} \left( \bigvee_{x \in S} C_x \right).
     \label{eq:at_least_cnf}
 \end{equation}
-Các trường hợp biên suy biến cũng được định nghĩa nhất quán về mặt toán học: ở cận trên, nếu $k \ge m$ thì điều kiện hiển nhiên đúng nên sinh ra tập mệnh đề rỗng, còn nếu $k = 0$ thì công thức sinh ra $m$ mệnh đề đơn vị $(\neg C_{x_1}) \wedge \dots \wedge (\neg C_{x_m})$; ngược lại ở cận dưới, nếu $k = 0$ thì công thức hiển nhiên đúng, còn nếu $k > m$ (đòi hỏi nhiều tội phạm hơn tổng số ghế trong vùng) thì công thức bất khả thỏa và sinh ra mệnh đề rỗng $\square$ để báo hiệu mâu thuẫn tức thời.
+Các trường hợp biên suy biến cũng được định nghĩa nhất quán về mặt toán học: ở cận
+trên, nếu $k \ge m$ thì điều kiện hiển nhiên đúng nên sinh ra tập mệnh đề rỗng,
+còn nếu $k = 0$ thì công thức sinh ra $m$ mệnh đề đơn vị $(\neg C_{x_1}) \wedge
+\dots \wedge (\neg C_{x_m})$; ngược lại ở cận dưới, nếu $k = 0$ thì công thức hiển
+nhiên đúng, còn nếu $k > m$ (đòi hỏi nhiều tội phạm hơn tổng số ô trong vùng) thì
+công thức bất khả thỏa và sinh ra mệnh đề rỗng $\square$ để báo hiệu mâu thuẫn
+ngay lập tức.
 
-Để minh họa cụ thể cơ chế vận hành của phép biên dịch đếm lực lượng, xét lời khai \textit{``Có chính xác $2$ tội phạm ở hàng thứ nhất''} trên bàn cờ $4 \times 4$. Hàng đầu tiên bao gồm $m = 4$ ô $\{\text{A1}, \text{B1}, \text{C1}, \text{D1}\}$, được ánh xạ qua Phương trình \eqref{eq:var_map} thành tập biến $R = \{1, 2, 3, 4\}$ với ngưỡng $k = 2$. Ở nhánh cận dưới ($\sum_{x \in R} C_x \ge 2$), kích thước tổ hợp bằng $m - k + 1 = 4 - 2 + 1 = 3$, tạo ra $\binom{4}{3} = 4$ mệnh đề dương bậc ba:
+Để minh họa cụ thể cơ chế vận hành của phép mã hóa ràng buộc đếm, xét lời khai
+\textit{``Có chính xác $2$ tội phạm ở hàng thứ nhất''} trên bàn cờ $4 \times 4$.
+Hàng đầu tiên bao gồm $m = 4$ ô $\{\text{A1}, \text{B1}, \text{C1}, \text{D1}\}$,
+được ánh xạ qua Phương trình \eqref{eq:var_map} thành tập biến
+$R = \{1, 2, 3, 4\}$ với ngưỡng $k = 2$. Ở nhánh cận dưới
+($\sum_{x \in R} C_x \ge 2$), kích thước tổ hợp bằng $m - k + 1 = 4 - 2 + 1 = 3$,
+tạo ra $\binom{4}{3} = 4$ mệnh đề dương bậc ba:
 \begin{equation}
-    (C_1 \vee C_2 \vee C_3) \;\wedge\; (C_1 \vee C_2 \vee C_4) \;\wedge\; (C_1 \vee C_3 \vee C_4) \;\wedge\; (C_2 \vee C_3 \vee C_4).
+    (C_1 \vee C_2 \vee C_3) \;\wedge\; (C_1 \vee C_2 \vee C_4)
+    \;\wedge\; (C_1 \vee C_3 \vee C_4) \;\wedge\; (C_2 \vee C_3 \vee C_4).
 \end{equation}
-Song song đó, ở nhánh cận trên ($\sum_{x \in R} C_x \le 2$), kích thước tổ hợp bằng $k + 1 = 2 + 1 = 3$, tạo ra thêm $\binom{4}{3} = 4$ mệnh đề âm bậc ba:
+Song song đó, ở nhánh cận trên ($\sum_{x \in R} C_x \le 2$), kích thước tổ hợp
+bằng $k + 1 = 2 + 1 = 3$, tạo ra thêm $\binom{4}{3} = 4$ mệnh đề âm bậc ba:
 \begin{equation}
-    (\neg C_1 \vee \neg C_2 \vee \neg C_3) \;\wedge\; (\neg C_1 \vee \neg C_2 \vee \neg C_4) \;\wedge\; (\neg C_1 \vee \neg C_3 \vee \neg C_4) \;\wedge\; (\neg C_2 \vee \neg C_3 \vee \neg C_4).
+    (\neg C_1 \vee \neg C_2 \vee \neg C_3)
+    \;\wedge\; (\neg C_1 \vee \neg C_2 \vee \neg C_4)
+    \;\wedge\; (\neg C_1 \vee \neg C_3 \vee \neg C_4)
+    \;\wedge\; (\neg C_2 \vee \neg C_3 \vee \neg C_4).
 \end{equation}
-Khi hợp nhất hai nhánh lại, lời khai được biểu diễn trọn vẹn bởi đúng $8$ mệnh đề bậc ba. Giả sử ở các bước tiếp theo, hai nghi phạm $\text{B1}$ ($C_2 = \text{True}$) và $\text{D1}$ ($C_4 = \text{True}$) được xác định là tội phạm; khi đó hai mệnh đề âm $(\neg C_1 \vee \neg C_2 \vee \neg C_4)$ và $(\neg C_2 \vee \neg C_3 \vee \neg C_4)$ lập tức bị rút gọn bởi cơ chế lan truyền đơn vị thành hai mệnh đề đơn $(\neg C_1)$ và $(\neg C_3)$, buộc cả $\text{A1}$ lẫn $\text{C1}$ phải là người vô tội mà không cần bất kỳ thao tác đoán thử nào.
+Khi hợp nhất hai nhánh lại, lời khai được biểu diễn đầy đủ bởi đúng $8$ mệnh đề
+bậc ba. Giả sử ở các bước tiếp theo, hai nghi phạm $\text{B1}$
+($C_2 = \text{True}$) và $\text{D1}$ ($C_4 = \text{True}$) được xác định là tội
+phạm; khi đó hai mệnh đề âm $(\neg C_1 \vee \neg C_2 \vee \neg C_4)$ và $(\neg C_2
+\vee \neg C_3 \vee \neg C_4)$ lập tức rút gọn qua cơ chế lan truyền đơn vị thành
+hai mệnh đề đơn $(\neg C_1)$ và $(\neg C_3)$, buộc cả $\text{A1}$ lẫn $\text{C1}$
+phải là người vô tội mà không cần bất kỳ bước rẽ nhánh thử--sai nào.
 
 \subsubsection{Nhóm manh mối mở rộng tính chẵn lẻ bằng chuỗi XOR tuyến tính}
 \label{subsubsec:parity_cnf}
-Khác với các ràng buộc ngưỡng đơn điệu, lời khai tính chẵn lẻ trên vùng $R = \{x_1, \dots, x_m\}$ đòi hỏi tổng số tội phạm chia cho $2$ có số dư cố định bằng $0$ (chẵn) hoặc bằng $1$ (lẻ), tức biểu thức chuỗi tuyển loại trừ $C_{x_1} \oplus C_{x_2} \oplus \dots \oplus C_{x_m}$ phải nhận chân trị $\text{False}$ (nếu chẵn) hoặc $\text{True}$ (nếu lẻ). Nếu áp dụng cách khai triển bảng chân trị trực tiếp chỉ dùng các biến gốc $C_{x_i}$, mỗi phép gán sai tính chẵn lẻ trong tổng số $2^m$ tổ hợp đòi hỏi đúng một mệnh đề độ rộng $m$ để loại bỏ, dẫn tới số lượng mệnh đề tăng vọt theo hàm mũ $2^{m-1}$ (lên tới $32.768$ mệnh đề khi $m = 16$).
+Khác với các ràng buộc ngưỡng đơn điệu, lời khai tính chẵn lẻ trên vùng
+$R = \{x_1, \dots, x_m\}$ đòi hỏi tổng số tội phạm chia cho $2$ có số dư cố định
+bằng $0$ (chẵn) hoặc bằng $1$ (lẻ), tức biểu thức chuỗi XOR $C_{x_1} \oplus
+C_{x_2} \oplus \dots \oplus C_{x_m}$ phải nhận chân trị $\text{False}$ (nếu chẵn)
+hoặc $\text{True}$ (nếu lẻ). Nếu áp dụng cách khai triển bảng chân trị trực tiếp
+chỉ dùng các biến gốc $C_{x_i}$, mỗi phép gán sai tính chẵn lẻ trong tổng số $2^m$
+tổ hợp đòi hỏi đúng một mệnh đề chứa $m$ literal để loại bỏ, dẫn tới số lượng mệnh
+đề tăng theo hàm mũ $2^{m-1}$ (lên tới $32.768$ mệnh đề khi $m = 16$).
 
-Nhằm triệt tiêu sự bùng nổ hàm mũ này đối với mọi vùng có kích thước $m \ge 3$, nhóm triển khai kỹ thuật phân rã dây chuyền Tseitin \cite{tseitin1983complexity} bằng cách đưa vào $m - 2$ biến phụ trợ $y_1, y_2, \dots, y_{m-2} \in V_{\text{phụ}}$ đóng vai trò thanh ghi cộng dồn tính lẻ của các tiền tố liên tiếp:
+Nhằm khắc phục sự bùng nổ số mệnh đề này đối với mọi vùng có kích thước $m \ge 3$,
+nhóm triển khai phép biến đổi chuỗi Tseitin \cite{tseitin1983complexity} bằng
+cách đưa vào $m - 2$ biến phụ trợ $y_1, y_2, \dots, y_{m-2} \in V_{\text{phụ}}$
+đóng vai trò biến trung gian lưu tính chẵn lẻ cộng dồn của các đoạn tiền tố liên
+tiếp:
 \begin{equation}
     y_1 \leftrightarrow (C_{x_1} \oplus C_{x_2}), \qquad
     y_t \leftrightarrow (y_{t-1} \oplus C_{x_{t+1}}) \quad \forall t \in \{2, \dots, m - 2\}.
 \end{equation}
-Xét một mắt xích cơ sở tổng quát $z \leftrightarrow (a \oplus b)$, áp dụng định nghĩa tương đương hai chiều và biến đổi đại số từng bước sang dạng chuẩn hội:
+Xét một mắt xích cơ sở tổng quát $z \leftrightarrow (a \oplus b)$, áp dụng định
+nghĩa tương đương hai chiều và biến đổi đại số từng bước sang dạng chuẩn hội:
 \begin{align}
     z \leftrightarrow (a \oplus b)
     &\equiv \big(z \to (a \oplus b)\big) \wedge \big((a \oplus b) \to z\big) \nonumber\\
-    &\equiv \big(\neg z \vee ((a \vee b) \wedge (\neg a \vee \neg b))\big) \wedge \big(\neg((a \wedge \neg b) \vee (\neg a \wedge b)) \vee z\big) \nonumber\\
-    &\equiv (\neg z \vee a \vee b) \wedge (\neg z \vee \neg a \vee \neg b) \wedge \big(((\neg a \vee b) \wedge (a \vee \neg b)) \vee z\big) \nonumber\\
-    &\equiv (a \vee b \vee \neg z) \wedge (\neg a \vee \neg b \vee \neg z) \wedge (\neg a \vee b \vee z) \wedge (a \vee \neg b \vee z).
+    &\equiv \big(\neg z \vee ((a \vee b) \wedge (\neg a \vee \neg b))\big)
+        \wedge \big(\neg((a \wedge \neg b) \vee (\neg a \wedge b)) \vee z\big) \nonumber\\
+    &\equiv (\neg z \vee a \vee b) \wedge (\neg z \vee \neg a \vee \neg b)
+        \wedge \big(((\neg a \vee b) \wedge (a \vee \neg b)) \vee z\big) \nonumber\\
+    &\equiv (a \vee b \vee \neg z) \wedge (\neg a \vee \neg b \vee \neg z)
+        \wedge (\neg a \vee b \vee z) \wedge (a \vee \neg b \vee z).
     \label{eq:xor_gate_cnf}
 \end{align}
-Như vậy, mỗi mắt xích trung gian luôn tiêu tốn cố định đúng $4$ mệnh đề bậc ba bất kể chuỗi dài bao nhiêu. Tại mắt xích khóa đuôi cuối cùng kết nối biến tích lũy $y_{m-2}$ với biến gốc cuối cùng $C_{x_m}$, nếu lời khai yêu cầu tổng lẻ thì $y_{m-2} \oplus C_{x_m}$ được biên dịch theo Phương trình \eqref{eq:cnf_diff} thành hai mệnh đề $(y_{m-2} \vee C_{x_m}) \wedge (\neg y_{m-2} \vee \neg C_{x_m})$; ngược lại, nếu lời khai yêu cầu tổng chẵn thì điều kiện $y_{m-2} \leftrightarrow C_{x_m}$ được biên dịch theo Phương trình \eqref{eq:cnf_same} thành hai mệnh đề $(\neg y_{m-2} \vee C_{x_m}) \wedge (y_{m-2} \vee \neg C_{x_m})$. Cộng gộp toàn chuỗi với $m \ge 2$, phương pháp mã hóa chỉ phát sinh đúng $4(m - 2) + 2 = 4m - 6$ mệnh đề có độ rộng tối đa bằng $3$, bảo đảm tính thỏa mãn tương đương (\textit{equisatisfiability}) với độ phức tạp không gian tuyến tính tuyệt đối $\Theta(m)$.
+Như vậy, mỗi mắt xích trung gian luôn phát sinh cố định đúng $4$ mệnh đề bậc ba
+bất kể chuỗi dài bao nhiêu. Tại mắt xích chốt cuối cùng của chuỗi kết nối biến
+tích lũy $y_{m-2}$ với biến gốc cuối cùng $C_{x_m}$, nếu lời khai yêu cầu tổng lẻ
+thì $y_{m-2} \oplus C_{x_m}$ được chuyển đổi theo Phương trình \eqref{eq:cnf_diff}
+thành hai mệnh đề $(y_{m-2} \vee C_{x_m}) \wedge (\neg y_{m-2} \vee \neg
+C_{x_m})$; ngược lại, nếu lời khai yêu cầu tổng chẵn thì điều kiện
+$y_{m-2} \leftrightarrow C_{x_m}$ được chuyển đổi theo Phương trình
+\eqref{eq:cnf_same} thành hai mệnh đề $(\neg y_{m-2} \vee C_{x_m}) \wedge (y_{m-2}
+\vee \neg C_{x_m})$. Cộng gộp toàn chuỗi với $m \ge 2$, phương pháp mã hóa chỉ
+phát sinh đúng $4(m - 2) + 2 = 4m - 6$ mệnh đề chứa tối đa $3$ literal (dạng
+3-CNF), bảo đảm tính đồng khả thỏa (\textit{equisatisfiability}) với độ phức tạp
+không gian tuyến tính $\Theta(m)$.
 
 \subsection{Hợp nhất và kiểm chứng tri thức}
 \label{subsec:kb_assembly}
-Tại mỗi bước suy diễn thứ $t$, từ bản chụp công khai chứa tập các ô đã mở (cùng trạng thái tội phạm hoặc vô tội đã biết của chúng) và tập các lời khai hiện hữu $\mathcal{C}_t$, cơ sở tri thức tổng thể $KB_t$ được kiến tạo bằng phép hội của toàn bộ các mệnh đề đơn vị phản ánh thân phận đã biết với các khối mệnh đề biên dịch từ từng lời khai:
+Tại mỗi bước suy diễn thứ $t$, từ trạng thái công khai chứa tập các ô đã mở (cùng
+trạng thái tội phạm hoặc vô tội đã biết của chúng) và tập các lời khai hiện hữu
+$\mathcal{C}_t$, cơ sở tri thức tổng thể $KB_t$ được xây dựng bằng phép hội của
+toàn bộ các mệnh đề đơn vị phản ánh thân phận đã biết với các khối mệnh đề mã hóa
+từ từng lời khai:
 \begin{equation}
-    KB_t \;=\; \bigwedge_{u \in \mathcal{K}_t^{+}} (C_u) \;\wedge\; \bigwedge_{v \in \mathcal{K}_t^{-}} (\neg C_v) \;\wedge\; \bigwedge_{c \in \mathcal{C}_t} \text{CNF}(c),
+    KB_t \;=\; \bigwedge_{u \in \mathcal{K}_t^{+}} (C_u)
+    \;\wedge\; \bigwedge_{v \in \mathcal{K}_t^{-}} (\neg C_v)
+    \;\wedge\; \bigwedge_{c \in \mathcal{C}_t} \text{CNF}(c),
     \label{eq:kb_total}
 \end{equation}
-trong đó $\mathcal{K}_t^{+}$ và $\mathcal{K}_t^{-}$ lần lượt ký hiệu tập các ô đã được xác nhận là tội phạm và tập các ô đã được xác nhận là vô tội tính đến bước $t$. Trước khi chuyển giao cho bộ giải, toàn bộ các mệnh đề thành phần được đi qua quy trình chuẩn hóa ba tầng bảo toàn tương đương logic: khử các literal lặp lại bên trong cùng một mệnh đề, loại bỏ hoàn toàn các mệnh đề hằng đúng chứa đồng thời một biến và phủ định của chính nó, cuối cùng loại bỏ các mệnh đề trùng lặp xuất hiện giữa nhiều lời khai giao nhau mà vẫn giữ nguyên thứ tự xuất hiện tất định.
+trong đó $\mathcal{K}_t^{+}$ và $\mathcal{K}_t^{-}$ lần lượt ký hiệu tập các ô đã
+được xác nhận là tội phạm và tập các ô đã được xác nhận là vô tội tính đến bước
+$t$. Trước khi chuyển giao cho bộ giải, toàn bộ các mệnh đề thành phần được đi qua
+quy trình chuẩn hóa ba bước bảo toàn tương đương logic: khử các literal lặp lại
+bên trong cùng một mệnh đề, loại bỏ các mệnh đề hằng đúng (\textit{tautology}) chứa
+đồng thời một biến và phủ định của chính nó, cuối cùng loại bỏ các mệnh đề trùng
+lặp xuất hiện giữa nhiều lời khai giao nhau mà vẫn giữ nguyên thứ tự xuất hiện tất
+định.
 
-Nhằm kiểm chứng độc lập độ chính xác toán học của toàn bộ tầng mã hóa mà không phụ thuộc vào giả định đúng đắn của chính nó, nhóm xây dựng song song một bộ định giá ngữ nghĩa trực tiếp hoạt động bằng cách đếm số lượng và kiểm tra quan hệ chân trị nguyên bản trên từng cấu hình bàn cờ hoàn chỉnh. Thông qua phép thử vét cạn toàn bộ $2^{N^2}$ bảng phân bố chân trị trên lưới $3 \times 3$ ($512$ cấu hình) và lưới $4 \times 4$ ($65.536$ cấu hình), nhóm đã xác minh thực nghiệm rằng điều kiện đồng dư ngữ nghĩa sau đây luôn được thỏa mãn tuyệt đối cho mọi họ lời khai và mọi trường hợp biên:
+Nhằm kiểm chứng độc lập độ chính xác toán học của tầng mã hóa mà không phụ thuộc
+vào giả định đúng đắn của chính nó, nhóm xây dựng song song một bộ đánh giá ngữ
+nghĩa trực tiếp (\texttt{ClueEvaluator}) hoạt động bằng cách đếm số lượng và kiểm
+tra trực tiếp điều kiện đúng--sai theo định nghĩa gốc trên từng cấu hình bàn cờ
+hoàn chỉnh. Thông qua phép thử vét cạn toàn bộ $2^{N^2}$ phép gán chân trị trên
+lưới $3 \times 3$ ($512$ cấu hình) và lưới $4 \times 4$ ($65.536$ cấu hình), nhóm
+đã xác minh thực nghiệm rằng điều kiện bảo toàn tập nghiệm trên biến gốc sau đây
+luôn được bảo đảm cho mọi họ lời khai và mọi trường hợp biên:
 \begin{equation}
-    M_{\text{gốc}} \models_{\text{ngữ nghĩa}} c \iff \exists M_{\text{phụ}} : (M_{\text{gốc}} \cup M_{\text{phụ}}) \models_{\text{CNF}} \text{CNF}(c).
+    M_{\text{gốc}} \models_{\text{ngữ nghĩa}} c
+    \iff \exists M_{\text{phụ}} :
+    (M_{\text{gốc}} \cup M_{\text{phụ}}) \models_{\text{CNF}} \text{CNF}(c).
 \end{equation}
-Sự trùng khớp một--một giữa định giá ngữ nghĩa gốc và tập nghiệm chiếu trên biến gốc của công thức CNF là cơ sở vững chắc bảo đảm tác tử suy diễn không bao giờ mắc sai số biên dịch trong mọi tình huống phức tạp.
+Sự tương ứng một--một giữa kết quả đánh giá ngữ nghĩa gốc và tập nghiệm chiếu trên
+biến gốc của công thức CNF là cơ sở bảo đảm tác tử suy diễn không gặp sai lệch
+trong quá trình mã hóa CNF trước các tổ hợp ràng buộc phức tạp.

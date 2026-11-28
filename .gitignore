@@ -70,3 +70,7 @@ env/
 # Raw source model zip (extracted CC0 GLBs live in frontend/public/models/)
 docs/griductive_cc0_starter_models.zip
 
+# Full-length 1080p submission demo videos (uploaded to Google Drive per spec §4.7)
+docs/demo/griductive_demo_*.mp4
+
+

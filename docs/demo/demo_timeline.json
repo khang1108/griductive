@@ -1,0 +1,80 @@
+[
+  {
+    "name": "Intro Title Card",
+    "start": 0.0,
+    "end": 6.53,
+    "duration": 6.53
+  },
+  {
+    "name": "Architecture Overview — 5-Layer PublicState Isolation",
+    "start": 6.08,
+    "end": 24.62,
+    "duration": 18.53
+  },
+  {
+    "name": "Act 1 Card — 3D GUI Overview",
+    "start": 24.17,
+    "end": 27.97,
+    "duration": 3.8
+  },
+  {
+    "name": "Act 1 — 3D Midnight Archive GUI Tour",
+    "start": 27.52,
+    "end": 69.42,
+    "duration": 41.9
+  },
+  {
+    "name": "Act 2 Card — Manual Deduction & No-Guess",
+    "start": 68.97,
+    "end": 72.77,
+    "duration": 3.8
+  },
+  {
+    "name": "Act 2 — Manual Play (NOT PROVABLE, CONTRADICTED, 9/9 Solve)",
+    "start": 72.32,
+    "end": 141.72,
+    "duration": 69.4
+  },
+  {
+    "name": "Act 3 Card — Hint, AI Step & Auto-Solve (4x4)",
+    "start": 141.27,
+    "end": 145.07,
+    "duration": 3.8
+  },
+  {
+    "name": "Act 3 — Hint, SAT Trace, AI Step & Auto-Solve (4x4)",
+    "start": 144.62,
+    "end": 206.48,
+    "duration": 61.87
+  },
+  {
+    "name": "Act 4 Card — 5x5 Scalability Stress Test",
+    "start": 206.03,
+    "end": 209.83,
+    "duration": 3.8
+  },
+  {
+    "name": "Act 4 — 5x5 Auto-Solve with 2.4x Speed-Ramp",
+    "start": 209.38,
+    "end": 274.25,
+    "duration": 64.87
+  },
+  {
+    "name": "Act 5 Card — Pytest & 14-Puzzle Benchmark",
+    "start": 273.8,
+    "end": 277.6,
+    "duration": 3.8
+  },
+  {
+    "name": "Act 5 — Terminal Verification & Benchmark Table",
+    "start": 277.15,
+    "end": 312.22,
+    "duration": 35.07
+  },
+  {
+    "name": "Outro Card",
+    "start": 311.77,
+    "end": 318.3,
+    "duration": 6.53
+  }
+]
