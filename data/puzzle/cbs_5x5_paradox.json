@@ -1,0 +1,457 @@
+{
+  "puzzle_id": "cbs_5x5_paradox",
+  "name": "5×5 Twin-Clue Parity Web",
+  "size": 5,
+  "difficulty": "master",
+  "initial_revealed": [
+    "D5",
+    "C4"
+  ],
+  "grid": [
+    {
+      "cell": "A1",
+      "name": "Ada",
+      "profession": "Architect",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 3,
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "COLUMN",
+            "col": 2
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "D3"
+          }
+        }
+      }
+    },
+    {
+      "cell": "B1",
+      "name": "Binh",
+      "profession": "Botanist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "PARITY",
+        "parity": "EVEN",
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "NEIGHBORS",
+            "center": "A3"
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "B4"
+          }
+        }
+      }
+    },
+    {
+      "cell": "C1",
+      "name": "Chi",
+      "profession": "Chef",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "NEIGHBORS",
+            "center": "A3"
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "B4"
+          }
+        }
+      }
+    },
+    {
+      "cell": "D1",
+      "name": "Duy",
+      "profession": "Doctor",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 3,
+        "region": {
+          "type": "COLUMN",
+          "col": 0
+        }
+      }
+    },
+    {
+      "cell": "E1",
+      "name": "Emi",
+      "profession": "Engineer",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_LEAST",
+        "k": 4,
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "B5"
+        }
+      }
+    },
+    {
+      "cell": "A2",
+      "name": "Finn",
+      "profession": "Forensic Artist",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "PARITY",
+        "parity": "EVEN",
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "COLUMN",
+            "col": 4
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "D3"
+          }
+        }
+      }
+    },
+    {
+      "cell": "B2",
+      "name": "Gia",
+      "profession": "Geologist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "PARITY",
+        "parity": "EVEN",
+        "region": {
+          "type": "ROW",
+          "row": 2
+        }
+      }
+    },
+    {
+      "cell": "C2",
+      "name": "Hana",
+      "profession": "Historian",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "A1"
+        }
+      }
+    },
+    {
+      "cell": "D2",
+      "name": "Ivy",
+      "profession": "Illustrator",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "B2",
+        "right": "E5"
+      }
+    },
+    {
+      "cell": "E2",
+      "name": "Jae",
+      "profession": "Journalist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "type": "COLUMN",
+          "col": 4
+        }
+      }
+    },
+    {
+      "cell": "A3",
+      "name": "Khan",
+      "profession": "Keeper",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "DIFFERENT",
+        "left": "E1",
+        "right": "C3"
+      }
+    },
+    {
+      "cell": "B3",
+      "name": "Linh",
+      "profession": "Librarian",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "NEIGHBORS",
+            "center": "C4"
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "B5"
+          }
+        }
+      }
+    },
+    {
+      "cell": "C3",
+      "name": "Minh",
+      "profession": "Musician",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "E4"
+        }
+      }
+    },
+    {
+      "cell": "D3",
+      "name": "Nora",
+      "profession": "Nurse",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "PARITY",
+        "parity": "ODD",
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "NEIGHBORS",
+            "center": "A4"
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "A5"
+          }
+        }
+      }
+    },
+    {
+      "cell": "E3",
+      "name": "Owen",
+      "profession": "Oceanographer",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "PARITY",
+        "parity": "ODD",
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "NEIGHBORS",
+            "center": "C4"
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "E4"
+          }
+        }
+      }
+    },
+    {
+      "cell": "A4",
+      "name": "Phuc",
+      "profession": "Pilot",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "PARITY",
+        "parity": "ODD",
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "COLUMN",
+            "col": 4
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "D5"
+          }
+        }
+      }
+    },
+    {
+      "cell": "B4",
+      "name": "Quynh",
+      "profession": "Quant Analyst",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 4,
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "B1"
+        }
+      }
+    },
+    {
+      "cell": "C4",
+      "name": "Rin",
+      "profession": "Researcher",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 3,
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "ROW",
+            "row": 0
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "C2"
+          }
+        }
+      }
+    },
+    {
+      "cell": "D4",
+      "name": "Son",
+      "profession": "Sculptor",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "E2"
+        }
+      }
+    },
+    {
+      "cell": "E4",
+      "name": "Trang",
+      "profession": "Translator",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_MOST",
+        "k": 3,
+        "region": {
+          "type": "ROW",
+          "row": 3
+        }
+      }
+    },
+    {
+      "cell": "A5",
+      "name": "Uma",
+      "profession": "Urologist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "AT_LEAST",
+        "k": 2,
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "A1"
+        }
+      }
+    },
+    {
+      "cell": "B5",
+      "name": "Vy",
+      "profession": "Violinist",
+      "status": "INNOCENT",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 1,
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "NEIGHBORS",
+            "center": "A4"
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "B4"
+          }
+        }
+      }
+    },
+    {
+      "cell": "C5",
+      "name": "Will",
+      "profession": "Watchmaker",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "PARITY",
+        "parity": "EVEN",
+        "region": {
+          "type": "NEIGHBORS",
+          "center": "A5"
+        }
+      }
+    },
+    {
+      "cell": "D5",
+      "name": "Xuan",
+      "profession": "X-ray Tech",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "EXACTLY",
+        "k": 2,
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "ROW",
+            "row": 3
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "A3"
+          }
+        }
+      }
+    },
+    {
+      "cell": "E5",
+      "name": "Yen",
+      "profession": "Yacht Captain",
+      "status": "CRIMINAL",
+      "clue": {
+        "type": "PARITY",
+        "parity": "ODD",
+        "region": {
+          "type": "INTERSECTION",
+          "left": {
+            "type": "EXPLICIT",
+            "cells": [
+              "A1",
+              "B1",
+              "C1",
+              "D1",
+              "E1",
+              "A2",
+              "E2",
+              "A3",
+              "E3",
+              "A4",
+              "E4",
+              "A5",
+              "B5",
+              "C5",
+              "D5",
+              "E5"
+            ]
+          },
+          "right": {
+            "type": "NEIGHBORS",
+            "center": "D1"
+          }
+        }
+      }
+    }
+  ]
+}

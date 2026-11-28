@@ -19,37 +19,53 @@ class PuzzleDefinition:
     hidden_statuses: tuple[Status, ...]
     clues: tuple[Clue, ...]
     initial_revealed: frozenset[CellId]
+    cols: int | None = None
+
+    @property
+    def rows(self) -> int:
+        return self.size
+
+    @property
+    def num_cols(self) -> int:
+        return self.size if self.cols is None else self.cols
+
+    @property
+    def total_cells(self) -> int:
+        return self.rows * self.num_cols
+
+    @property
+    def layout(self) -> BoardLayout:
+        return BoardLayout(self.size, cols=self.num_cols)
 
     def __post_init__(self) -> None:
-        expected_len = self.size * self.size
+        expected_len = self.total_cells
         if len(self.characters) != expected_len:
-            raise ValueError(f"Expected {expected_len} characters for {self.size}x{self.size}, got {len(self.characters)}")
+            raise ValueError(f"Expected {expected_len} characters for {self.num_cols}x{self.rows}, got {len(self.characters)}")
         if len(self.hidden_statuses) != expected_len:
             raise ValueError(f"Expected {expected_len} hidden statuses, got {len(self.hidden_statuses)}")
         if len(self.clues) != expected_len:
             raise ValueError(f"Expected {expected_len} clues, got {len(self.clues)}")
 
-        layout = BoardLayout(self.size)
+        layout = self.layout
         for cell in self.initial_revealed:
             if not layout.contains(cell):
-                raise ValueError(f"Initial revealed cell {cell} is out of bounds for size {self.size}")
+                raise ValueError(f"Initial revealed cell {cell} is out of bounds for size {self.num_cols}x{self.rows}")
 
     def get_character(self, cell: CellId) -> Character:
-        idx = cell.row * self.size + cell.col
+        idx = cell.row * self.num_cols + cell.col
         return self.characters[idx]
 
     def get_status(self, cell: CellId) -> Status:
-        idx = cell.row * self.size + cell.col
+        idx = cell.row * self.num_cols + cell.col
         return self.hidden_statuses[idx]
 
     def get_clue(self, cell: CellId) -> Clue:
-        idx = cell.row * self.size + cell.col
+        idx = cell.row * self.num_cols + cell.col
         return self.clues[idx]
 
     def full_solution(self) -> dict[CellId, Status]:
         """Mapping from CellId to Status for the complete hidden solution."""
-        layout = BoardLayout(self.size)
-        return {cell: self.get_status(cell) for cell in layout.all_cells()}
+        return {cell: self.get_status(cell) for cell in self.layout.all_cells()}
 
 
 @dataclass(frozen=True)
@@ -82,14 +98,23 @@ class PublicState:
     revision: int
     size: int
     cells: tuple[PublicCell, ...]
+    cols: int | None = None
+
+    @property
+    def rows(self) -> int:
+        return self.size
+
+    @property
+    def num_cols(self) -> int:
+        return self.size if self.cols is None else self.cols
 
     def __post_init__(self) -> None:
-        expected_len = self.size * self.size
+        expected_len = self.rows * self.num_cols
         if len(self.cells) != expected_len:
             raise ValueError(f"Expected {expected_len} public cells, got {len(self.cells)}")
 
     def get_cell(self, cell_id: CellId) -> PublicCell:
-        idx = cell_id.row * self.size + cell_id.col
+        idx = cell_id.row * self.num_cols + cell_id.col
         return self.cells[idx]
 
     def revealed_clues(self) -> tuple[Clue, ...]:

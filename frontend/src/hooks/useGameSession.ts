@@ -30,6 +30,25 @@ const INTRO_DURATION_MS = 1050;
 const STAMP_DURATION_MS = 260;
 const REJECT_DURATION_MS = 1900;
 
+function mergeRunMetrics(
+  prev: RunMetrics | null,
+  next: RunMetrics
+): RunMetrics {
+  if (!prev) return next;
+  return {
+    sat_queries: prev.sat_queries + next.sat_queries,
+    decisions: prev.decisions + next.decisions,
+    propagations: prev.propagations + next.propagations,
+    backtracks: prev.backtracks + next.backtracks,
+    solver_runtime_ms: prev.solver_runtime_ms + next.solver_runtime_ms,
+    wall_time_ms: prev.wall_time_ms + next.wall_time_ms,
+    max_primary_vars: Math.max(prev.max_primary_vars, next.max_primary_vars),
+    max_aux_vars: Math.max(prev.max_aux_vars, next.max_aux_vars),
+    max_clauses: Math.max(prev.max_clauses, next.max_clauses),
+    deduction_steps: prev.deduction_steps + next.deduction_steps,
+  };
+}
+
 const DEFAULT_FALLBACK_SETTINGS: UserSettings = {
   quality: "high",
   viewMode: "overview",
@@ -618,7 +637,7 @@ export function useGameSession(
 
       gameStateRef.current = response.state;
       setGameState(response.state);
-      setLastMetrics(response.metrics);
+      setLastMetrics((prev) => mergeRunMetrics(prev, response.metrics));
       setLastStep(response.step);
 
       setPresentation((prev) => ({

@@ -286,7 +286,7 @@ errors = validate_puzzle(puzzle: PuzzleDefinition) -> list[str]
 
 ## 4. Server REST APIs (`griductive.server`)
 
-FastAPI server phục vụ giao tiếp giữa Web GUI và Backend Python tại cổng `8999`:
+FastAPI server phục vụ giao tiếp giữa Web GUI và Backend Python tại cổng `8000`:
 
 | Phương thức | Endpoint | Request Body | Response JSON |
 | :--- | :--- | :--- | :--- |
@@ -295,7 +295,8 @@ FastAPI server phục vụ giao tiếp giữa Web GUI và Backend Python tại c
 | `POST` | `/api/restart` | *(Không)* | Khởi động lại ván chơi hiện tại |
 | `POST` | `/api/load` | `{"stage": "dragon_4x4_01"}` | Nạp màn chơi mới theo `puzzle_id` |
 | `GET` | `/api/puzzles` | *(Không)* | Danh sách 14 màn chơi kèm metadata |
-| `POST` | `/api/hint` | *(Không)* | Gợi ý từ AI: `{"hint": "...", "cell": "B1", "status": "CRIMINAL"}` |
+| `POST` | `/api/hint` | *(Không)* | Gợi ý công khai: `hint`, `cell`, `status`, `active_clue_ids`, `session_id`, `revision`, `outcome`; xem hợp đồng chi tiết bên dưới. |
+| `POST` | `/api/auto-solve/step` | `{"session_id": "...", "revision": 0}` | Tối đa một ô: `{state, outcome, step, metrics}`; token cũ trả 409. |
 | `POST` | `/api/auto-solve`| *(Không)* | Chạy tự động Agent và trả về trace các bước |
 | `GET` | `/api/avatars/{name}`| *(Param)* | Ảnh chân dung PNG của nghi phạm |
 
@@ -457,3 +458,82 @@ def solve_case(puzzle_id: str):
 if __name__ == "__main__":
     solve_case("dragon_3x3_01")
 ```
+
+---
+
+## Interactive deduction API (integration update)
+
+This section supersedes the earlier placeholder examples for Hint and Auto-solve.
+The backend runs one shared `GameSession` in one process. Browser tabs share that
+session. All state reads and mutations are serialized by its session lock.
+`GameState` includes `session_id` and `revision`; restart changes the session ID,
+while a committed reveal increments the revision.
+
+### `POST /api/hint`
+
+No request body. Returns a proved move without changing the board:
+
+```json
+{
+  "hint": "Forced CRIMINAL for B1 by refutation ...",
+  "cell": "B1",
+  "status": "CRIMINAL",
+  "active_clue_ids": ["clue-A1"],
+  "session_id": "example-session",
+  "revision": 0,
+  "outcome": "AVAILABLE"
+}
+```
+
+The other outcomes are `SOLVED`, `STUCK_NO_FORCIBLE_MOVE`, and `INCONSISTENT`;
+`cell` and `status` are null without an available hint. Active clue IDs identify
+public knowledge, not a minimal proof core.
+
+### `POST /api/auto-solve/step`
+
+Request the next single move with the session/revision from the latest state:
+
+```json
+{"session_id": "example-session", "revision": 0}
+```
+
+`revision` must be a nonnegative integer; booleans and strings are rejected.
+A stale session/revision returns HTTP 409 without changing the board. Invalid
+request fields return HTTP 422. Never automatically retry an ambiguous failed
+mutation: fetch `/api/state` to determine whether it was committed.
+
+The response has `state` (the updated GameState), `outcome`, `step` (one structured
+trace entry or null), and `metrics` (metrics for this request). A nonterminal
+successful move returns `IN_PROGRESS`; terminal outcomes are `SOLVED`,
+`STUCK_NO_FORCIBLE_MOVE`, `INCONSISTENT`, `ENGINE_REJECTED`, and `TIMEOUT`.
+The API does not promise to interrupt a SAT query already executing.
+
+A trace entry contains `step`, `active_clue_ids`, `sat_queries`, `verdict_cell`
+(e.g. `B1`), `verdict_status`, `new_clue_id`, `primary_vars_count`,
+`aux_vars_count`, `clause_count`, and `stats`. Trace step numbers follow committed
+board revision. `stats` contains `decisions`, `propagations`, `backtracks`, and
+`runtime_ms`.
+
+Metrics contain `sat_queries`, `decisions`, `propagations`, `backtracks`,
+`solver_runtime_ms`, `wall_time_ms`, `max_primary_vars`, `max_aux_vars`,
+`max_clauses`, and `deduction_steps`. Statistics include all SAT queries made in
+the request, including an unsuccessful final scan.
+
+### `POST /api/auto-solve`
+
+The whole-run endpoint remains available for compatibility and diagnostic use;
+the interactive GUI uses `/api/auto-solve/step`. The whole-run response keeps
+GameState fields at top level, preserves legacy `status` (`SOLVED`/`STALLED`) and
+banner fields, and adds `outcome`, `steps_taken`, `trace` (display
+strings), `trace_steps` (structured entries), and `metrics`. Its cooperative
+timeout is checked between deduction iterations, not inside an executing SAT
+query. An inconsistent knowledge base preserves the legacy HTTP 409 error;
+the step endpoint instead returns a structured `INCONSISTENT` outcome.
+Benchmark hard deadlines are enforced separately by worker processes.
+
+### Public information boundary
+
+Agent decisions use only `PublicState`. Unrevealed cells in JSON have null
+status/clue fields. Full hidden answers and unrevealed clues are never included
+in deduction responses. The engine alone verifies committed moves against the
+private puzzle.

@@ -1,0 +1,29 @@
+{
+  "args": {
+    "db_path": null,
+    "output_dir": "docs/work/benchmark-results",
+    "puzzle_ids": null,
+    "repeats": 3,
+    "size": null,
+    "timeout_ms": 10000
+  },
+  "cpu": "AMD Ryzen AI 7 350 w/ Radeon 860M",
+  "git_dirty_paths": [
+    "README.md",
+    "docs/work/API.md",
+    "frontend/package-lock.json",
+    "AGENTS.md",
+    "docs/superpowers/plans/2026-11-20-system-integration.md",
+    "docs/superpowers/specs/2026-11-20-system-integration-design.md",
+    "docs/work/BENCHMARKS.md",
+    "docs/work/GUI_ACCEPTANCE.md",
+    "docs/work/benchmark-results/benchmark_metadata.json",
+    "docs/work/benchmark-results/benchmark_results.csv",
+    "docs/work/benchmark-results/benchmark_results.md"
+  ],
+  "git_head": "37f1ebc057707da8ef2fa1d4c8d3eee4474d73e2",
+  "platform": "Linux-7.3.4-arch1-1-x86_64-with-glibc2.44",
+  "python": "3.14.10 (main, Nov  4 2026, 18:21:50) [GCC 16.2.1 20260810]",
+  "solver_class": "griductive.solver.dpll.DPLLSolver",
+  "timestamp_utc": "2026-11-21T17:17:21.524740Z"
+}

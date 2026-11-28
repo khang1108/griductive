@@ -6,6 +6,7 @@ from griductive.domain.clues import Clue
 from griductive.domain.models import BoardLayout, Status
 from griductive.domain.state import PublicState
 from griductive.logic.cnf.algo import (
+    AdvancedClueAlgo,
     BaseEncodingAlgo,
     BasicClueAlgo,
     CardinalityAlgo,
@@ -26,6 +27,7 @@ class CNFEncoder:
                 BasicClueAlgo(),
                 CardinalityAlgo(),
                 ParityAlgo(),
+                AdvancedClueAlgo(sub_encoder=self),
             ]
 
     def register_algo(self, algo: BaseEncodingAlgo) -> None:
@@ -48,8 +50,9 @@ class CNFEncoder:
 
     def encode_knowledge_base(self, state: PublicState) -> EncodedKB:
         """Convert all known cell statuses and revealed clues in state to an EncodedKB."""
-        layout = BoardLayout(state.size)
-        mapper = VariableMapper(state.size)
+        num_cols = getattr(state, "num_cols", state.size)
+        layout = BoardLayout(state.size, cols=num_cols)
+        mapper = VariableMapper(state.size, cols=num_cols)
         all_clauses: list[Clause] = []
         seen: set[Clause] = set()
 

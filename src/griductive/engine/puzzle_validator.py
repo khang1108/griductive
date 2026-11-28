@@ -8,9 +8,8 @@ from griductive.domain.state import PuzzleDefinition
 def validate_puzzle_integrity(puzzle: PuzzleDefinition) -> list[str]:
     """Validate structure and indexing of a PuzzleDefinition."""
     errors: list[str] = []
-    size = puzzle.size
-    layout = BoardLayout(size)
-    total_cells = size * size
+    layout = puzzle.layout
+    total_cells = layout.total_cells
 
     if len(puzzle.characters) != total_cells:
         errors.append(f"Expected {total_cells} characters, got {len(puzzle.characters)}")
@@ -42,7 +41,7 @@ def validate_puzzle_integrity(puzzle: PuzzleDefinition) -> list[str]:
 def validate_clue_truthfulness(puzzle: PuzzleDefinition) -> list[str]:
     """Validate that every clue is true under the puzzle's hidden ground-truth solution."""
     errors: list[str] = []
-    layout = BoardLayout(puzzle.size)
+    layout = puzzle.layout
     evaluator = ClueEvaluator()
     solution = puzzle.full_solution()
 

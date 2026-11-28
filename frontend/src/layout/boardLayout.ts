@@ -1,11 +1,14 @@
 export interface BoardLayoutOptions {
   compact: boolean;
+  cols?: number;
   maxWidth?: number;
   maxHeight?: number;
 }
 
 export interface BoardLayoutMetrics {
   size: number;
+  rows: number;
+  cols: number;
   compact: boolean;
   cardWidth: number;
   cardHeight: number;
@@ -132,13 +135,15 @@ export function computeBoardLayout(
   size: number,
   options: BoardLayoutOptions
 ): BoardLayoutMetrics {
-  const safeSize = Math.max(1, Math.round(size));
-  const base = getBasePreset(safeSize, options.compact);
+  const safeRows = Math.max(1, Math.round(size));
+  const safeCols = Math.max(1, Math.round(options.cols ?? safeRows));
+  const maxDim = Math.max(safeRows, safeCols);
+  const base = getBasePreset(maxDim, options.compact);
 
   const baseGridWidth =
-    safeSize * base.cardWidth + Math.max(0, safeSize - 1) * base.gap;
+    safeCols * base.cardWidth + Math.max(0, safeCols - 1) * base.gap;
   const baseGridHeight =
-    safeSize * base.cardHeight + Math.max(0, safeSize - 1) * base.gap;
+    safeRows * base.cardHeight + Math.max(0, safeRows - 1) * base.gap;
   const baseTotalWidth =
     base.padding * 2 + base.rowHeaderWidth + base.headerGap + baseGridWidth;
   const baseTotalHeight =
@@ -166,15 +171,16 @@ export function computeBoardLayout(
     colHeaderHeight = Math.max(16, Math.floor(base.colHeaderHeight * rawScale));
     headerGap = Math.max(4, Math.floor(base.headerGap * rawScale));
 
-    const totalGap = Math.max(0, safeSize - 1) * gap;
-    const chromeW = padding * 2 + rowHeaderWidth + headerGap + totalGap;
-    const chromeH = padding * 2 + colHeaderHeight + headerGap + totalGap;
+    const totalGapW = Math.max(0, safeCols - 1) * gap;
+    const totalGapH = Math.max(0, safeRows - 1) * gap;
+    const chromeW = padding * 2 + rowHeaderWidth + headerGap + totalGapW;
+    const chromeH = padding * 2 + colHeaderHeight + headerGap + totalGapH;
 
     const maxCardW = hasMaxW
-      ? Math.floor((options.maxWidth! - chromeW) / safeSize)
+      ? Math.floor((options.maxWidth! - chromeW) / safeCols)
       : base.cardWidth;
     const maxCardH = hasMaxH
-      ? Math.floor((options.maxHeight! - chromeH) / safeSize)
+      ? Math.floor((options.maxHeight! - chromeH) / safeRows)
       : base.cardHeight;
 
     const aspect = base.cardHeight / base.cardWidth;
@@ -193,15 +199,17 @@ export function computeBoardLayout(
     cardHeight = Math.max(MIN_TOUCH_TARGET_PX, targetH);
   }
 
-  const gridWidth = safeSize * cardWidth + Math.max(0, safeSize - 1) * gap;
-  const gridHeight = safeSize * cardHeight + Math.max(0, safeSize - 1) * gap;
+  const gridWidth = safeCols * cardWidth + Math.max(0, safeCols - 1) * gap;
+  const gridHeight = safeRows * cardHeight + Math.max(0, safeRows - 1) * gap;
   const gridOffsetX = padding + rowHeaderWidth + headerGap;
   const gridOffsetY = padding + colHeaderHeight + headerGap;
   const totalWidth = gridOffsetX + gridWidth + padding;
   const totalHeight = gridOffsetY + gridHeight + padding;
 
   return {
-    size: safeSize,
+    size: maxDim,
+    rows: safeRows,
+    cols: safeCols,
     compact: options.compact,
     cardWidth,
     cardHeight,

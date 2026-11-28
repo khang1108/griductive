@@ -52,6 +52,37 @@ class CardinalityAlgo(BaseEncodingAlgo):
     def supports(self, clue: Clue) -> bool:
         return isinstance(clue, (AtLeastClue, AtMostClue, ExactlyClue))
 
+    def _encode_large_cardinality(
+        self,
+        vars_in_region: Sequence[int],
+        kind: str,
+        k: int,
+        mapper: VariableMapper,
+    ) -> list[Clause]:
+        """Polynomial O(m^2) sequential-counter fallback when m > 10."""
+        from griductive.logic.cnf.algo.advanced import AdvancedClueAlgo
+
+        m = len(vars_in_region)
+        if k < 0:
+            return [()] if kind in ("AT_MOST", "EXACTLY") else []
+        if k == 0:
+            if kind == "AT_LEAST":
+                return []
+            return self.finalize_clauses([(-v,) for v in vars_in_region])
+        if k > m:
+            return [] if kind == "AT_MOST" else [()]
+        if k == m:
+            if kind == "AT_MOST":
+                return []
+            return self.finalize_clauses([(v,) for v in vars_in_region])
+
+        cnt, clauses = AdvancedClueAlgo.encode_unary_counter(vars_in_region, mapper)
+        if kind in ("AT_LEAST", "EXACTLY"):
+            clauses.append((cnt[k - 1],))
+        if kind in ("AT_MOST", "EXACTLY"):
+            clauses.append((-cnt[k],))
+        return self.finalize_clauses(clauses)
+
     def encode_clue(
         self,
         clue: Clue,
@@ -61,12 +92,18 @@ class CardinalityAlgo(BaseEncodingAlgo):
         match clue:
             case AtLeastClue(region=region, k=k):
                 vars_in_region = self.resolve_region_vars(region, layout, mapper)
+                if len(vars_in_region) > 10:
+                    return self._encode_large_cardinality(vars_in_region, "AT_LEAST", k, mapper)
                 return self.encode_at_least(vars_in_region, k)
             case AtMostClue(region=region, k=k):
                 vars_in_region = self.resolve_region_vars(region, layout, mapper)
+                if len(vars_in_region) > 10:
+                    return self._encode_large_cardinality(vars_in_region, "AT_MOST", k, mapper)
                 return self.encode_at_most(vars_in_region, k)
             case ExactlyClue(region=region, k=k):
                 vars_in_region = self.resolve_region_vars(region, layout, mapper)
+                if len(vars_in_region) > 10:
+                    return self._encode_large_cardinality(vars_in_region, "EXACTLY", k, mapper)
                 return self.encode_exactly(vars_in_region, k)
             case _:
                 raise TypeError(f"CardinalityAlgo does not support clue type: {type(clue).__name__}")

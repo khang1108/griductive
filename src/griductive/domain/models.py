@@ -29,6 +29,13 @@ class Parity(str, Enum):
     ODD = "ODD"
 
 
+class CompareOp(str, Enum):
+    """Comparison operator between two regional counts."""
+    MORE = "MORE"
+    FEWER = "FEWER"
+    EQUAL = "EQUAL"
+
+
 @dataclass(frozen=True, order=True)
 class CellId:
     """Internal zero-based coordinates for a grid cell.
@@ -59,19 +66,22 @@ class CellId:
             raise ValueError(f"Cell coordinates must be non-negative: '{label}'")
         return cls(row=row, col=col)
 
-    def to_var(self, size: int) -> int:
+    def to_var(self, size: int, cols: int | None = None) -> int:
         """Map cell to primary 1-based propositional variable deterministically in row-major order."""
-        if not (0 <= self.row < size and 0 <= self.col < size):
-            raise ValueError(f"Cell {self} is outside board of size {size}")
-        return self.row * size + self.col + 1
+        num_cols = size if cols is None else cols
+        if not (0 <= self.row < size and 0 <= self.col < num_cols):
+            raise ValueError(f"Cell {self} is outside board of size {num_cols}x{size}")
+        return self.row * num_cols + self.col + 1
 
     @classmethod
-    def from_var(cls, var: int, size: int) -> Self:
-        """Inverse map from primary propositional variable (1..size^2) back to CellId."""
-        if not (1 <= var <= size * size):
-            raise ValueError(f"Variable index {var} out of range for primary variables of size {size}")
+    def from_var(cls, var: int, size: int, cols: int | None = None) -> Self:
+        """Inverse map from primary propositional variable (1..rows*cols) back to CellId."""
+        num_cols = size if cols is None else cols
+        total = size * num_cols
+        if not (1 <= var <= total):
+            raise ValueError(f"Variable index {var} out of range for primary variables of size {num_cols}x{size}")
         var_idx = var - 1
-        return cls(row=var_idx // size, col=var_idx % size)
+        return cls(row=var_idx // num_cols, col=var_idx % num_cols)
 
 
 @dataclass(frozen=True)
@@ -84,20 +94,35 @@ class Character:
 
 @dataclass(frozen=True)
 class BoardLayout:
-    """Board geometry and bounds."""
+    """Board geometry and bounds (supports square size×size and rectangular cols×rows)."""
     size: int
+    cols: int | None = None
 
     def __post_init__(self) -> None:
         if self.size < 1:
-            raise ValueError(f"Board size must be positive, got {self.size}")
+            raise ValueError(f"Board rows/size must be positive, got {self.size}")
+        if self.cols is not None and self.cols < 1:
+            raise ValueError(f"Board cols must be positive, got {self.cols}")
+
+    @property
+    def rows(self) -> int:
+        return self.size
+
+    @property
+    def num_cols(self) -> int:
+        return self.size if self.cols is None else self.cols
+
+    @property
+    def total_cells(self) -> int:
+        return self.rows * self.num_cols
 
     def contains(self, cell: CellId) -> bool:
-        return 0 <= cell.row < self.size and 0 <= cell.col < self.size
+        return 0 <= cell.row < self.rows and 0 <= cell.col < self.num_cols
 
     def all_cells(self) -> tuple[CellId, ...]:
         """All cells in deterministic row-major order."""
         return tuple(
             CellId(r, c)
-            for r in range(self.size)
-            for c in range(self.size)
+            for r in range(self.rows)
+            for c in range(self.num_cols)
         )

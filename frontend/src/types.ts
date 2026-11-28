@@ -14,7 +14,11 @@ export type ClueKind =
   | "EXACTLY"
   | "ATLEAST"
   | "ATMOST"
-  | "PARITY";
+  | "PARITY"
+  | "COMPARE"
+  | "CONNECTED"
+  | "COMPOUND"
+  | "FLAVOR";
 
 export type RegionKind =
   | "ROW"
@@ -72,6 +76,8 @@ export interface StageInfo {
   puzzle_id: string;
   name: string;
   size: number;
+  rows?: number;
+  cols?: number;
   difficulty: string;
   initial_revealed?: string[];
 }
@@ -87,6 +93,8 @@ export interface BannerState {
 export interface GameState {
   session_id: string;
   size: number;
+  rows?: number;
+  cols?: number;
   current_stage: string;
   available_stages: string[];
   stage_catalog?: StageInfo[];

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TypeAlias
 
-from griductive.domain.models import CellId, Parity, Status
+from griductive.domain.models import CellId, CompareOp, Parity, Status
 from griductive.domain.regions import RegionSpec
 
 
@@ -92,6 +92,42 @@ class ParityClue(ClueBase):
     parity: Parity
 
 
+@dataclass(frozen=True, kw_only=True)
+class CompareClue(ClueBase):
+    """Compare count of target_status between left_region and right_region."""
+    left_region: RegionSpec
+    right_region: RegionSpec
+    op: CompareOp
+    target_status: Status = Status.CRIMINAL
+    text: str | None = None
+
+
+@dataclass(frozen=True, kw_only=True)
+class ConnectedClue(ClueBase):
+    """All cells with target_status in region form one orthogonally connected group."""
+    region: RegionSpec
+    target_status: Status = Status.CRIMINAL
+    text: str | None = None
+
+
+@dataclass(frozen=True, kw_only=True)
+class CompoundClue(ClueBase):
+    """Conjunction of multiple structured sub-clues on a single card."""
+    clues: tuple[Clue, ...]
+    text: str | None = None
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not self.clues:
+            raise ValueError("CompoundClue requires at least one sub-clue")
+
+
+@dataclass(frozen=True, kw_only=True)
+class FlavorClue(ClueBase):
+    """Non-deductive flavor statement (always True)."""
+    text: str
+
+
 Clue: TypeAlias = (
     FactClue
     | SameClue
@@ -100,5 +136,9 @@ Clue: TypeAlias = (
     | AtLeastClue
     | AtMostClue
     | ParityClue
+    | CompareClue
+    | ConnectedClue
+    | CompoundClue
+    | FlavorClue
 )
 

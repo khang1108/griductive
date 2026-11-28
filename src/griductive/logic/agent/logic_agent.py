@@ -129,31 +129,42 @@ def _extract_active_clue_ids(state: Any) -> tuple[str, ...]:
     return tuple(_get_clue_id(clue, idx) for idx, clue in enumerate(clues))
 
 
-def _clue_mentions_cell(clue: Any, cell: Any, board_size: int | None) -> bool:
+def _clue_mentions_cell(
+    clue: Any,
+    cell: Any,
+    board_size: int | None,
+    board_cols: int | None = None,
+) -> bool:
     """Check in pure Python whether a clue directly references the given cell."""
     for attr in ("target", "left", "right", "owner"):
         if getattr(clue, attr, None) == cell:
             return True
 
-    region = getattr(clue, "region", None)
-    if region is not None and board_size and board_size > 0:
-        try:
-            resolved = resolve_region(region, BoardLayout(board_size))
-            if cell in resolved:
-                return True
-        except Exception:
-            pass
+    if board_size and board_size > 0:
+        layout = BoardLayout(board_size, cols=board_cols)
+        for reg_attr in ("region", "left_region", "right_region"):
+            region = getattr(clue, reg_attr, None)
+            if region is not None:
+                try:
+                    if cell in resolve_region(region, layout):
+                        return True
+                except Exception:
+                    pass
+    sub_clues = getattr(clue, "clues", None)
+    if sub_clues:
+        return any(_clue_mentions_cell(sub, cell, board_size, board_cols) for sub in sub_clues)
     return False
 
 
 def _find_related_clue_ids(state: Any, cell: Any) -> tuple[str, ...]:
     """Find active clue IDs that directly reference the target cell (zero SAT calls)."""
     board_size = getattr(state, "size", None)
+    board_cols = getattr(state, "num_cols", board_size)
     clues = _extract_revealed_clues(state)
     return tuple(
         _get_clue_id(clue, idx)
         for idx, clue in enumerate(clues)
-        if _clue_mentions_cell(clue, cell, board_size)
+        if _clue_mentions_cell(clue, cell, board_size, board_cols)
     )
 
 
@@ -163,7 +174,7 @@ def _build_complete_clues_state(puzzle: PuzzleDefinition) -> CompleteCluesPublic
         cell: puzzle.get_status(cell)
         for cell in puzzle.initial_revealed
     }
-    layout = BoardLayout(puzzle.size)
+    layout = puzzle.layout
     unresolved = tuple(
         cell for cell in layout.all_cells() if cell not in puzzle.initial_revealed
     )
@@ -180,6 +191,7 @@ def _build_complete_clues_state(puzzle: PuzzleDefinition) -> CompleteCluesPublic
         _known=initial_known,
         _unresolved=unresolved,
         cells=cells,
+        cols=puzzle.num_cols,
     )
 
 

@@ -121,6 +121,11 @@ class CompleteCluesPublicState:
     session_id: str = "uniqueness"
     revision: int = 0
     cells: tuple[Any, ...] = ()
+    cols: int | None = None
+
+    @property
+    def num_cols(self) -> int:
+        return self.size if self.cols is None else self.cols
 
     def revealed_clues(self) -> tuple[Clue, ...]:
         """Return all clues in the complete clue set."""

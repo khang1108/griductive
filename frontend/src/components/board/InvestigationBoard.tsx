@@ -54,7 +54,8 @@ export const InvestigationBoard: React.FC<InvestigationBoardProps> = ({
   onClosePanel,
   registerFocusRef,
 }) => {
-  const safeSize = Math.max(1, size);
+  const safeRows = Math.max(1, layout.rows || size);
+  const safeCols = Math.max(1, layout.cols || size);
 
   const { cellByPos, cellByCoord, orderedCells } = useMemo(() => {
     const byPos = new Map<string, CellData>();
@@ -150,13 +151,13 @@ export const InvestigationBoard: React.FC<InvestigationBoardProps> = ({
           nextRow = Math.max(0, row - 1);
           break;
         case "ArrowDown":
-          nextRow = Math.min(safeSize - 1, row + 1);
+          nextRow = Math.min(safeRows - 1, row + 1);
           break;
         case "ArrowLeft":
           nextCol = Math.max(0, col - 1);
           break;
         case "ArrowRight":
-          nextCol = Math.min(safeSize - 1, col + 1);
+          nextCol = Math.min(safeCols - 1, col + 1);
           break;
         case "Home":
           if (e.ctrlKey || e.metaKey) {
@@ -168,10 +169,10 @@ export const InvestigationBoard: React.FC<InvestigationBoardProps> = ({
           break;
         case "End":
           if (e.ctrlKey || e.metaKey) {
-            nextRow = safeSize - 1;
-            nextCol = safeSize - 1;
+            nextRow = safeRows - 1;
+            nextCol = safeCols - 1;
           } else {
-            nextCol = safeSize - 1;
+            nextCol = safeCols - 1;
           }
           break;
         default:
@@ -186,7 +187,7 @@ export const InvestigationBoard: React.FC<InvestigationBoardProps> = ({
         focusCell(targetCell.coord);
       }
     },
-    [safeSize, cellByPos, focusCell, onClosePanel]
+    [safeRows, safeCols, cellByPos, focusCell, onClosePanel]
   );
 
   const activeHighlightCell =
@@ -196,14 +197,14 @@ export const InvestigationBoard: React.FC<InvestigationBoardProps> = ({
 
   const colLetters = useMemo(
     () =>
-      Array.from({ length: safeSize }, (_, idx) =>
+      Array.from({ length: safeCols }, (_, idx) =>
         String.fromCharCode(65 + idx)
       ),
-    [safeSize]
+    [safeCols]
   );
   const rowNumbers = useMemo(
-    () => Array.from({ length: safeSize }, (_, idx) => String(idx + 1)),
-    [safeSize]
+    () => Array.from({ length: safeRows }, (_, idx) => String(idx + 1)),
+    [safeRows]
   );
 
   return (
@@ -282,9 +283,9 @@ export const InvestigationBoard: React.FC<InvestigationBoardProps> = ({
       <div
         key={sessionKey}
         role="grid"
-        aria-label={`${safeSize} by ${safeSize} suspect investigation board`}
-        aria-rowcount={safeSize}
-        aria-colcount={safeSize}
+        aria-label={`${safeCols} by ${safeRows} suspect investigation board`}
+        aria-rowcount={safeRows}
+        aria-colcount={safeCols}
         style={{
           left: layout.gridOffsetX,
           top: layout.gridOffsetY,

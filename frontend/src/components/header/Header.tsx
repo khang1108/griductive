@@ -46,7 +46,9 @@ function formatStageLabel(stageId: string, info?: StageInfo): string {
   const rawName = (
     info?.name || stageId.replace(/_/g, " ").replace(/\.json$/i, "")
   ).trim();
-  const sizeStr = info?.size ? `${info.size}×${info.size}` : "";
+  const rows = info?.rows ?? info?.size;
+  const cols = info?.cols ?? rows;
+  const sizeStr = rows && cols ? `${cols}×${rows}` : "";
   const alreadyHasSize =
     /\b[345]\s*[x×]\s*[345]\b/i.test(rawName);
   if (!sizeStr || alreadyHasSize) {
@@ -93,6 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
 
     const g3: { id: string; label: string }[] = [];
     const g4: { id: string; label: string }[] = [];
+    const g4x5: { id: string; label: string }[] = [];
     const g5: { id: string; label: string }[] = [];
     const gOther: { id: string; label: string }[] = [];
 
@@ -104,19 +107,17 @@ export const Header: React.FC<HeaderProps> = ({
     for (const stageId of stageIds) {
       const info = infoMap.get(stageId);
       const label = formatStageLabel(stageId, info);
-      const inferredSize =
-        info?.size ??
-        (stageId.includes("3x3")
-          ? 3
-          : stageId.includes("4x4")
-            ? 4
-            : stageId.includes("5x5")
-              ? 5
-              : 0);
+      const rows = info?.rows ?? info?.size ?? 0;
+      const cols = info?.cols ?? rows;
 
-      if (inferredSize === 3) g3.push({ id: stageId, label });
-      else if (inferredSize === 4) g4.push({ id: stageId, label });
-      else if (inferredSize === 5) g5.push({ id: stageId, label });
+      if (rows === 5 && cols === 4) g4x5.push({ id: stageId, label });
+      else if (rows === 3 && cols === 3) g3.push({ id: stageId, label });
+      else if (rows === 4 && cols === 4) g4.push({ id: stageId, label });
+      else if (rows === 5 && cols === 5) g5.push({ id: stageId, label });
+      else if (stageId.includes("4x5")) g4x5.push({ id: stageId, label });
+      else if (stageId.includes("3x3")) g3.push({ id: stageId, label });
+      else if (stageId.includes("4x4")) g4.push({ id: stageId, label });
+      else if (stageId.includes("5x5")) g5.push({ id: stageId, label });
       else gOther.push({ id: stageId, label });
     }
 
@@ -124,6 +125,7 @@ export const Header: React.FC<HeaderProps> = ({
       [];
     if (g3.length > 0) groups.push({ label: "3×3", items: g3 });
     if (g4.length > 0) groups.push({ label: "4×4", items: g4 });
+    if (g4x5.length > 0) groups.push({ label: "4×5 (Knotwise)", items: g4x5 });
     if (g5.length > 0) groups.push({ label: "5×5", items: g5 });
     if (gOther.length > 0) groups.push({ label: "Cases", items: gOther });
     return groups;

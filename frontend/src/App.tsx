@@ -4,6 +4,7 @@ import { soundEngine } from "./audio/soundEngine";
 import {
   ActionDock,
   Banner,
+  BenchmarkHud,
   CaseReportModal,
   EvidenceNotebook,
   Header,
@@ -177,13 +178,19 @@ export function App() {
       ? (isNotebookOpen ? 330 : 64) + (session.selectedCell ? 300 : 48)
       : 36;
     const verticalAllowance = viewport.isMobile ? 168 : 156;
-    return computeBoardLayout(session.gameState?.size ?? 3, {
-      compact: viewport.isCompact,
-      maxWidth: Math.max(250, viewport.width - sideAllowance),
-      maxHeight: Math.max(250, viewport.height - verticalAllowance),
-    });
+    return computeBoardLayout(
+      session.gameState?.rows ?? session.gameState?.size ?? 3,
+      {
+        cols: session.gameState?.cols,
+        compact: viewport.isCompact,
+        maxWidth: Math.max(250, viewport.width - sideAllowance),
+        maxHeight: Math.max(250, viewport.height - verticalAllowance),
+      }
+    );
   }, [
     session.gameState?.size,
+    session.gameState?.rows,
+    session.gameState?.cols,
     viewport.isCompact,
     viewport.isMobile,
     viewport.width,
@@ -492,6 +499,16 @@ export function App() {
           soundEngine.playPaperSelect();
           session.clearClueFocus();
         }}
+      />
+
+      {/* Always-Visible Live SAT Benchmark HUD */}
+      <BenchmarkHud
+        metrics={session.lastMetrics}
+        lastStep={session.lastStep}
+        isAutoSolving={session.isAutoSolving}
+        isStepPending={session.isStepPending}
+        isSolved={gameState.is_solved}
+        isDrawerMode={isDrawerMode}
       />
 
       {/* Minimal Bottom-Center Action Capsule */}
