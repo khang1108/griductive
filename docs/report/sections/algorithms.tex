@@ -6,8 +6,8 @@ mệnh đề chuẩn hội $KB_t$, bài toán cốt lõi tiếp theo là thiết
 tự động có khả năng tìm ra chính xác những ô có chân trị được xác định tất yếu,
 đồng thời tuân thủ chặt chẽ nguyên tắc không suy đoán khi thiếu căn cứ. Chương này
 trình bày chi tiết thuật toán giải thỏa mãn mệnh đề DPLL tự cài đặt, định lý suy
-diễn hệ quả bằng phản chứng, chứng minh toán học cho kỹ thuật bộ nhớ đệm mô hình
-chứng nhân và phương pháp kiểm định tính duy nhất của nghiệm.
+diễn hệ quả bằng phản chứng, chứng minh toán học cho kỹ thuật bộ nhớ đệm nghiệm
+mẫu (\textit{witness model}) và phương pháp kiểm định tính duy nhất của nghiệm.
 
 \subsection{Giải thuật DPLL tất định}
 \label{subsec:dpll_solver}
@@ -96,8 +96,8 @@ truyền mệnh đề đơn vị lặp đến trạng thái bão hòa (điểm b
 phép gán chân trị một phần $\sigma$, nếu một mệnh đề $C$ chưa được thỏa mãn và
 toàn bộ các literal trong $C$ ngoại trừ duy nhất một literal chưa gán $\ell^*$ đều
 đã bị gán giá trị sai, thì $\ell^*$ bắt buộc nhận giá trị đúng để mệnh đề $C$ có
-thể thỏa mãn. Mỗi phép ép buộc như vậy lại tiếp tục rút gọn các mệnh đề
-có chứa biến liên quan và có thể nhanh chóng dẫn đến sự xuất hiện của mệnh đề rỗng
+thể thỏa mãn. Mỗi phép gán bắt buộc như vậy lại tiếp tục rút gọn các mệnh đề có
+chứa biến liên quan và có thể nhanh chóng dẫn đến sự xuất hiện của mệnh đề rỗng
 ($|U| = 0$) khi xảy ra mâu thuẫn dây chuyền. Chỉ khi quá trình lan truyền đạt tới
 trạng thái bão hòa mà công thức vẫn chưa thỏa hết, bộ giải mới chọn biến chưa gán
 có chỉ số nhỏ nhất $v^* \in V$ để thử lần lượt hai nhánh $\text{True}$ rồi
@@ -170,27 +170,25 @@ Không thỏa & Không thỏa & \textbf{Mâu thuẫn} & Tập manh mối hiện 
 \end{tabularx}
 \end{table}
 
-\subsection{Bộ nhớ đệm mô hình chứng nhân}
+\subsection{Bộ nhớ đệm nghiệm mẫu}
 \label{subsec:witness_cache}
 Nếu áp dụng Bảng \ref{tab:entailment_truth_table} một cách trực tiếp (chưa tái sử
 dụng kết quả trung gian) cho từng ô trong tập các ô chưa mở $U_t$, mỗi ô chưa đủ
 dữ kiện để kết luận luôn tiêu tốn hai lượt gọi bộ giải DPLL độc lập, đẩy tổng chi
 phí mỗi bước lên tới $2|U_t|$ truy vấn. Tuy nhiên, nhóm nhận thấy rằng mỗi khi một
 lượt gọi DPLL kết thúc với trạng thái thỏa được, nghiệm trả về $M$ không chỉ xác
-nhận riêng cho một biến đang xét mà thực chất là một \textbf{mô hình chứng nhân
-toàn cục} (\textit{witness model} --- nghiệm mẫu thỏa mãn đồng thời toàn bộ
-$KB_t$). Từ nhận xét này, nhóm đề xuất kỹ thuật lưu đệm các mô hình chứng nhân thu
-thập được ngay trong nội bộ bước $t$ để cắt tỉa sớm các truy vấn dư thừa trên
-những ô kế tiếp.
+nhận riêng cho một biến đang xét mà thực chất là một \textbf{nghiệm mẫu toàn cục}
+(\textit{witness model} --- mô hình thỏa mãn đồng thời toàn bộ $KB_t$). Từ nhận
+xét này, nhóm đề xuất kỹ thuật lưu đệm các nghiệm mẫu thu thập được ngay trong
+nội bộ bước $t$ để cắt tỉa sớm các truy vấn dư thừa trên những ô kế tiếp.
 
-\noindent\textbf{Mệnh đề 2 (Tính đúng đắn của bộ nhớ đệm mô hình chứng nhân theo
-bước):}
+\noindent\textbf{Mệnh đề 2 (Tính đúng đắn của bộ nhớ đệm nghiệm mẫu theo bước):}
 \textit{Xét tại một bước suy diễn cố định $t$ với cơ sở tri thức $KB_t$, giả sử
-tập mô hình chứng nhân $\mathcal{W}_t$ lưu giữ các mô hình $M$ sinh ra từ những
-lượt gọi DPLL thỏa được trước đó trong cùng bước $t$. Với mọi ô chưa mở
-$j \in U_t$ có biến mệnh đề tương ứng $v_j = \phi_N(j)$ nằm trong miền xác định
-của một mô hình $M \in \mathcal{W}_t$: nếu $M(v_j) = \text{True}$ thì công thức
-$KB_t \wedge C_j$ chắc chắn thỏa được mà không cần gọi lại bộ giải; tương tự, nếu
+tập nghiệm mẫu $\mathcal{W}_t$ lưu giữ các mô hình $M$ sinh ra từ những lượt gọi
+DPLL thỏa được trước đó trong cùng bước $t$. Với mọi ô chưa mở $j \in U_t$ có
+biến mệnh đề tương ứng $v_j = \phi_N(j)$ nằm trong miền xác định của một mô hình
+$M \in \mathcal{W}_t$: nếu $M(v_j) = \text{True}$ thì công thức $KB_t \wedge C_j$
+chắc chắn thỏa được mà không cần gọi lại bộ giải; tương tự, nếu
 $M(v_j) = \text{False}$ thì công thức $KB_t \wedge \neg C_j$ chắc chắn thỏa được.}
 
 \noindent\textbf{Chứng minh:}
@@ -215,22 +213,23 @@ $KB_{t+1} = KB_t \wedge (\ell^*) \wedge \text{CNF}(c_{\text{mới}})$. Do tính 
 đơn điệu của logic mệnh đề làm thu hẹp không gian nghiệm $\mathrm{Models}(KB_{t+1})
 \subseteq \mathrm{Models}(KB_t)$, các mô hình cũ trong $\mathcal{W}_t$ có thể vi
 phạm lời khai mới $c_{\text{mới}}$ và không còn hợp lệ ở bước $t + 1$. Chính vì
-vậy, việc khởi tạo lại tập chứng nhân ở đầu mỗi chu kỳ quét giúp hệ thống vừa khai
-thác hiệu quả thông tin từ các mô hình đã giải, vừa loại bỏ nguy cơ sử dụng nhầm
-nghiệm mẫu đã lỗi thời.
+vậy, việc khởi tạo lại tập nghiệm mẫu ở đầu mỗi chu kỳ quét giúp hệ thống vừa
+khai thác hiệu quả thông tin từ các mô hình đã giải, vừa loại bỏ nguy cơ sử dụng
+nhầm nghiệm mẫu đã lỗi thời.
 
 \subsection{Chu trình giải tự động và nghiệm duy nhất}
 \label{subsec:auto_loop_uniqueness}
 Kết hợp đầy đủ các thành phần trên, chu trình suy diễn tự động toàn cục của tác tử
 được trình bày trong Thuật toán \ref{alg:logic_loop}. Ở từng vòng lặp, tác tử trích
-xuất trạng thái công khai mới nhất, mã hóa $KB_t$, khởi tạo tập chứng nhân rỗng
+xuất trạng thái công khai mới nhất, mã hóa $KB_t$, khởi tạo tập nghiệm mẫu rỗng
 $\mathcal{W}_t$ và duyệt tuần tự các ô chưa mở theo đúng thứ tự ưu tiên hàng
 ($\text{A1}, \text{B1}, \dots$). Ngay khi bắt gặp ô đầu tiên có một chiều giả định
-bị bác bỏ (chứng tỏ chiều ngược lại là hệ quả tất yếu), tác tử dừng quét bước hiện
-tại, gửi phán quyết kèm số hiệu phiên bản để lật mở dữ kiện mới và lặp lại chu
-trình. Trái lại, nếu đã quét hết các ô chưa mở mà mọi ô đều rơi vào trạng thái chưa
-xác định, vòng lặp chủ động dừng lại an toàn và trả về trạng thái thiếu dữ kiện
-chứng minh (\textsc{Stuck}) thay vì chọn ngẫu nhiên một nhánh chưa xác định.
+không thỏa được (chứng tỏ chiều ngược lại là hệ quả tất yếu), tác tử dừng quét
+bước hiện tại, gửi kết luận kèm số hiệu phiên bản để lật mở dữ kiện mới và lặp
+lại chu trình. Trái lại, nếu đã quét hết các ô chưa mở mà mọi ô đều rơi vào trạng
+thái chưa xác định, vòng lặp chủ động dừng lại an toàn và trả về trạng thái thiếu
+dữ kiện chứng minh (\textsc{Stuck}) thay vì chọn ngẫu nhiên một nhánh chưa xác
+định.
 
 \begin{algorithm}[H]
 \caption{Chu trình suy diễn tự động tuân thủ nguyên tắc không suy đoán}
@@ -277,8 +276,8 @@ chứng minh (\textsc{Stuck}) thay vì chọn ngẫu nhiên một nhánh chưa x
         \State \Return \textsc{Stuck}
             \Comment{Không suy đoán khi dữ kiện hiện tại chưa đủ chứng minh}
     \EndIf
-    \State Xác nhận phán quyết $\langle u^*, s^* \rangle$ để mở lời khai kế tiếp
-        và ghi vết bước giải
+    \State Gửi kết luận $\langle u^*, s^* \rangle$ để mở lời khai kế tiếp và ghi
+        vết bước giải
 \EndWhile
 \State \Return \textsc{Solved}
 \end{algorithmic}
@@ -293,7 +292,7 @@ nghiệm khả thỏa đầu tiên $M_1$. Nếu $KB_{\text{đầy đủ}}$ vô n
 bất kỳ biến gốc $v \in V_{\text{gốc}}$ nào không xuất hiện trong miền xác định của
 $M_1$ (đồng nghĩa biến đó tự do và sinh ra ít nhất hai nghiệm khác nhau), quy
 trình kết luận ngay màn chơi không có nghiệm duy nhất. Ngược lại, từ nghiệm $M_1$,
-hệ thống thiết lập một \textbf{mệnh đề chặn} (\textit{blocking clause}) ép buộc ít
+hệ thống thiết lập một \textbf{mệnh đề chặn} (\textit{blocking clause}) yêu cầu ít
 nhất một biến gốc trên bàn cờ phải nhận giá trị đối lập với $M_1$:
 \begin{equation}
     B(M_1) \;=\; \bigvee_{v \in V_{\text{gốc}}} \ell_{\text{đảo}}(v, M_1), \qquad

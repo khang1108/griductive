@@ -5,9 +5,8 @@ Chương này trình bày quy trình thực nghiệm định lượng nhằm đ�
 năng của hệ thống mã hóa và giải mệnh đề trên tập dữ liệu $14$ màn chơi chuẩn từ
 quy mô $3 \times 3$ đến quy mô kiểm thử chịu tải $5 \times 5$. Trên cơ sở số
 liệu đo đạc thực tế, chương phân tích sự phân hóa giữa các miền đặc trưng chi phí
-tính toán, lượng hóa đóng góp của bộ nhớ đệm mô hình chứng nhân qua thực nghiệm
-đối chứng thành phần (\textit{ablation study}), đối sánh quy luật tăng trưởng số
-mệnh đề theo kích thước vùng và khảo sát giới hạn của hệ thống trước các kịch bản
+tính toán, lượng hóa đóng góp của bộ nhớ đệm nghiệm mẫu qua thực nghiệm đối chứng
+thành phần (\textit{ablation study}), đối sánh quy luật tăng trưởng số mệnh đề theo kích thước vùng và khảo sát giới hạn của hệ thống trước các kịch bản
 suy biến và trường hợp biên khắc nghiệt.
 
 \subsection{Thiết lập môi trường đo đạc}
@@ -112,8 +111,8 @@ hoạt một chuỗi rút gọn dây chuyền trên các mệnh đề bậc hai 
 hiện mệnh đề rỗng ngay ở mức gốc của cây tìm kiếm (trước khi rẽ nhánh). Ngay cả
 tại hai màn lân cận phức tạp $\text{M11}$ ($2$ quyết định) và $\text{M14}$ ($1$
 quyết định), các phép chọn biến tự do này chỉ diễn ra ở nhánh kiểm tra khả thỏa
-của một ô chưa đủ dữ kiện để hoàn thiện mô hình chứng nhân và thành công ngay ở
-nhánh thử đầu tiên.
+của một ô chưa đủ dữ kiện để hoàn thiện nghiệm mẫu và thành công ngay ở nhánh thử
+đầu tiên.
 
 Bên cạnh đó, biểu đồ phân tán hai chiều tại Hình \ref{fig:regimes_scatter} cho
 thấy thời gian thực thi tổng thể không tăng đơn điệu thuần túy theo kích thước bàn
@@ -147,31 +146,31 @@ mệnh đề bên trong từng chu kỳ lan truyền đơn vị.
 \subsection{Đánh giá đối chứng hiệu quả bộ nhớ đệm}
 \label{subsec:exp_ablation}
 Nhằm kiểm chứng thực nghiệm giá trị của Mệnh đề 2 (Mục
-\ref{subsec:witness_cache}), nhóm thực hiện thí nghiệm đối chứng thành phần
+\ref{subsec:witness_cache}), nhóm thực hiện thực nghiệm đối chứng thành phần
 (\textit{ablation study}) trên $14$ màn chơi bằng cách đặt tác tử hoạt động ở hai
-cấu hình: tắt bộ nhớ đệm mô hình chứng nhân (luôn thực hiện đầy đủ cặp truy vấn
-giả định trái ngược cho từng ô) và bật bộ nhớ đệm mô hình chứng nhân theo từng
-bước. Hình \ref{fig:witness_ablation} và Bảng \ref{tab:ablation_summary} cho thấy
-việc tái sử dụng các mô hình thỏa mãn đã giúp cắt giảm tổng số lượt gọi DPLL trên
-toàn tập dữ liệu từ $930$ lượt xuống còn $863$ lượt (tiết kiệm $67$ lượt giải SAT,
-tương đương mức giảm $7{,}20\%$), đồng thời giảm tổng số phép lan truyền đơn vị từ
-$9.493$ phép xuống $8.813$ phép (giảm $7{,}16\%$) mà vẫn giữ nguyên thứ tự các bước
-suy diễn.
+cấu hình: tắt bộ nhớ đệm nghiệm mẫu (luôn thực hiện đầy đủ cặp truy vấn giả định
+trái ngược cho từng ô) và bật bộ nhớ đệm nghiệm mẫu theo từng bước. Hình
+\ref{fig:witness_ablation} và Bảng \ref{tab:ablation_summary} cho thấy việc tái sử
+dụng các mô hình thỏa mãn đã giúp cắt giảm tổng số lượt gọi DPLL trên toàn tập dữ
+liệu từ $930$ lượt xuống còn $863$ lượt (tiết kiệm $67$ lượt giải SAT, tương
+đương mức giảm $7{,}20\%$), đồng thời giảm tổng số phép lan truyền đơn vị từ
+$9.493$ phép xuống $8.813$ phép (giảm $7{,}16\%$) mà vẫn giữ nguyên thứ tự các
+bước suy diễn.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.96\textwidth]{images/charts/witness_cache_ablation.pdf}
     \caption{%
         Kết quả thực nghiệm đối chứng số lượng truy vấn SAT khi tắt và bật bộ nhớ
-        đệm mô hình chứng nhân trên 14 màn chơi}
+        đệm nghiệm mẫu trên 14 màn chơi}
     \label{fig:witness_ablation}
 \end{figure}
 
 \begin{table}[H]
 \centering
 \caption{%
-    Đối sánh định lượng hiệu quả của bộ nhớ đệm mô hình chứng nhân trên các màn
-    chơi đại diện}
+    Đối sánh định lượng hiệu quả của bộ nhớ đệm nghiệm mẫu trên các màn chơi đại
+    diện}
 \label{tab:ablation_summary}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{l l c r r c r r c}
@@ -203,7 +202,7 @@ của trình tự suy diễn. Ở những màn chơi có trình tự suy diễn 
 bước lập luận, ngay ô chưa mở đầu tiên mà tác tử xét tới đã chính là ô được xác
 định tất yếu ($15\text{ bước} \times 2\text{ truy vấn} = 30\text{ truy vấn}$), do
 đó vòng lặp kết thúc bước ngay trước khi có bất kỳ ô chưa xác định nào được lưu
-chứng nhân ($0\%$ khác biệt). Ngược lại, trên những màn chơi có mạch suy diễn phi
+nghiệm mẫu ($0\%$ khác biệt). Ngược lại, trên những màn chơi có mạch suy diễn phi
 tuyến chuyển tiếp giữa các hàng cột xa nhau như $\text{M05}$, $\text{M09}$,
 $\text{M10}$, $\text{M12}$ và $\text{M13}$, ngay khi tác tử đi qua ô chưa xác định
 đầu tiên, hai mô hình thỏa mãn thu được sẽ phủ giá trị chân trị cho phần lớn các
@@ -252,9 +251,10 @@ xứng nhau), quy trình kiểm định nghiệm duy nhất phát hiện ngay s�
 nghiệm thứ hai chỉ sau hai lượt giải, đồng thời chu trình giải tự động dừng lại an
 toàn ngay ở bước đầu tiên sau $14$ truy vấn kiểm tra mà không thực hiện bất kỳ bước
 suy đoán thiếu căn cứ nào. Tương tự ở kịch bản dữ liệu mâu thuẫn $\text{K02}$ (một
-lời khai khẳng định $\text{B1}$ là tội phạm nhưng lời khai khác lại cấm hàng đầu
-tiên có tội phạm), tác tử lập tức phát hiện cơ sở tri thức vô nghiệm trong
-$0{,}11\text{ ms}$ và ngắt chu trình trước khi làm sai lệch trạng thái bàn cờ.
+lời khai khẳng định $\text{B1}$ là tội phạm nhưng lời khai khác lại cho biết hàng
+đầu tiên không có tội phạm), tác tử lập tức phát hiện cơ sở tri thức vô nghiệm
+trong $0{,}11\text{ ms}$ và ngắt chu trình trước khi làm sai lệch trạng thái bàn
+cờ.
 
 \begin{table}[H]
 \centering
@@ -275,10 +275,10 @@ K01 & Màn $3\times3$ khuyết thiếu dữ kiện khiến hai ô đối xứng 
 K02 & Màn $3\times3$ chứa hai lời khai trực tiếp phủ định lẫn nhau & 5 & 0 & 2 & 0 &
 0,11 & Ngắt an toàn (Mâu thuẫn) \\
 K03 & Lưới $4\times4$ vô nghiệm đếm: 4 hàng có đúng 2 tội phạm nhưng 4 cột có tối
-đa 1 & 56 & 10 & 71 & 10 & 0,65 & Bác bỏ thành công \\
+đa 1 & 56 & 10 & 71 & 10 & 0,65 & Xác nhận vô nghiệm \\
 K04 & Lưới $4\times4$ vô nghiệm chẵn lẻ: 4 hàng tổng chẵn nhưng 3 cột tổng lẻ và 1
 cột chẵn & 80 & \textbf{1.022} & \textbf{5.220} & \textbf{1.022} & \textbf{87,24} &
-Bác bỏ thành công \\
+Xác nhận vô nghiệm \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -289,8 +289,8 @@ thuật thực tế của hệ thống hiện tại. Giới hạn thứ nhất n
 của cơ chế suy diễn phân giải trong giải thuật DPLL thuần túy trước hệ phương trình
 tuyến tính trên trường hữu hạn $\mathbb{F}_2$}
 \cite{tseitin1983complexity,urquhart1987hard}: trong khi mâu thuẫn tổng số lượng ở
-$\text{K03}$ ($8 \ne 4$) được DPLL bác bỏ nhanh chỉ sau $10$ nhánh quay lui
-($0{,}65\text{ ms}$), thì mâu thuẫn chẵn lẻ toàn cục ở $\text{K04}$ (tổng bốn hàng
+$\text{K03}$ ($8 \ne 4$) được DPLL kết luận vô nghiệm nhanh chỉ sau $10$ nhánh
+quay lui ($0{,}65\text{ ms}$), thì mâu thuẫn chẵn lẻ toàn cục ở $\text{K04}$ (tổng bốn hàng
 chẵn bằng $0 \pmod 2$ mâu thuẫn với tổng ba cột lẻ cộng một cột chẵn bằng
 $1 \pmod 2$) lại buộc bộ giải phải duyệt tới $1.022$ quyết định rẽ nhánh, $5.220$
 phép lan truyền và $1.022$ lần quay lui trong $87{,}24\text{ ms}$. Nguyên nhân là

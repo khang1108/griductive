@@ -34,9 +34,9 @@ hình thân phận cố định và hệ thống lời khai trung thực mở r�
 lần một ô mới được chứng minh thành công. \\
 \midrule
 \textbf{Bộ tác động} &
-Thực hiện phán quyết gán nhãn tội phạm hoặc vô tội lên một tọa độ cụ thể trên
+Thực hiện gán nhãn kết luận tội phạm hoặc vô tội lên một tọa độ cụ thể trên
 lưới, phát gợi ý hợp lệ kế tiếp cho người chơi hoặc điều khiển chu trình giải tự
-động từng bước đến khi hoàn tất vụ án. \\
+động từng bước đến khi hoàn tất màn chơi. \\
 \midrule
 \textbf{Bộ cảm biến} &
 Tiếp nhận bản ghi trạng thái công khai bất biến (\textit{immutable snapshot}) chứa
@@ -89,13 +89,13 @@ trạng thái công khai luôn tuân thủ bất biến đồng bộ đóng--m�
 thị đầy đủ cả thân phận lẫn lời khai), không xảy ra trạng thái rò rỉ thông tin
 một phần. Bên cạnh đó, hệ thống áp dụng cơ chế kiểm soát tương tranh lạc quan dựa
 trên số hiệu phiên bản tăng dần sau mỗi lần lật thẻ. Mỗi khi người chơi hoặc chế
-độ giải tự động gửi một phán quyết mới kèm theo số hiệu phiên bản hiện hành, tầng
-dịch vụ API chuyển phán quyết đó sang tác tử suy diễn để kiểm chứng quan hệ hệ quả
-logic trên tập manh mối công khai trước. Chỉ khi tác tử xác nhận phán quyết là hệ
-quả tất yếu và số hiệu phiên bản trùng khớp với trạng thái mới nhất, bộ điều hành
-trò chơi mới chấp thuận mở thẻ và tăng số hiệu phiên bản lên bước kế tiếp; ngược
-lại, mọi phán quyết chưa đủ căn cứ hoặc yêu cầu gửi trùng từ phiên bản cũ đều bị
-từ chối ngay tại bước kiểm tra hợp lệ.
+độ giải tự động gửi một yêu cầu kết luận mới kèm theo số hiệu phiên bản hiện
+hành, tầng dịch vụ API chuyển kết luận đó sang tác tử suy diễn để kiểm chứng quan
+hệ hệ quả logic trên tập manh mối công khai trước. Chỉ khi tác tử xác nhận kết
+luận là hệ quả tất yếu và số hiệu phiên bản trùng khớp với trạng thái mới nhất,
+bộ điều hành trò chơi mới chấp thuận mở thẻ và tăng số hiệu phiên bản lên bước kế
+tiếp; ngược lại, mọi kết luận chưa đủ căn cứ hoặc yêu cầu gửi trùng từ phiên bản
+cũ đều bị từ chối ngay tại bước kiểm tra hợp lệ.
 
 \subsection{Không gian điều tra ba chiều}
 \label{subsec:gui_3d}
@@ -126,17 +126,16 @@ luận.
 logic đều được thể hiện trực tiếp ngay trên mặt thẻ nghi phạm trong không gian ba
 chiều. Cụ thể, khi người chơi chọn một lời khai trong sổ tay manh mối bên phải, hệ
 thống chiếu sáng trực tiếp đường viền của các thẻ nằm trong vùng không gian do lời
-khai đó tham chiếu ngay trên mặt bàn. Đáng chú ý hơn, nếu người chơi đưa ra phán
-quyết sớm cho một nghi phạm khi dữ kiện hiện tại chưa đủ cơ sở chứng minh (chẳng
-hạn kết luận về ô $\text{B2}$ khi mới chỉ mở một dữ kiện duy nhất tại hàng đầu
-tiên), một con dấu cao su màu hổ phách mang nhãn chưa thể chứng minh
-(\textit{``NOT PROVABLE''}) sẽ dập nghiêng xuống mặt thẻ ba chiều kèm hiệu ứng
-rung nhẹ rồi từ từ mờ dần sau gần hai giây (Hình \ref{fig:gui_stamp_and_closed}a).
-Cuối cùng, khi toàn bộ các ô nghi phạm trên bàn cờ đã được xác định, hồ sơ tổng
-kết vụ án xuất hiện chính giữa màn hình, cung cấp số liệu định lượng minh bạch về
-số bước lập luận, tổng số truy vấn SAT, số phép lan truyền đơn vị, số lần quay lui
-và thời gian thực thi đến độ phân giải $0{,}01\text{ ms}$ của bộ giải (Hình
-\ref{fig:gui_stamp_and_closed}b).
+khai đó tham chiếu ngay trên mặt bàn. Nếu người chơi đưa ra kết luận sớm cho một
+nghi phạm khi dữ kiện hiện tại chưa đủ cơ sở chứng minh (chẳng hạn kết luận về ô
+$\text{B2}$ khi mới chỉ mở một dữ kiện duy nhất tại hàng đầu tiên), một con dấu
+cao su màu hổ phách mang nhãn chưa thể chứng minh (\textit{``NOT PROVABLE''}) sẽ
+được hiển thị ngay trên mặt thẻ để phản hồi cho người dùng (Hình
+\ref{fig:gui_stamp_and_closed}a). Cuối cùng, khi toàn bộ các ô nghi phạm trên bàn
+cờ đã được xác định, bảng tổng kết màn chơi xuất hiện chính giữa màn hình, cung
+cấp số liệu định lượng về số bước lập luận, tổng số truy vấn SAT, số phép lan
+truyền đơn vị, số lần quay lui và thời gian thực thi đến độ phân giải
+$0{,}01\text{ ms}$ của bộ giải (Hình \ref{fig:gui_stamp_and_closed}b).
 
 \begin{figure}[H]
     \centering
@@ -144,8 +143,8 @@ và thời gian thực thi đến độ phân giải $0{,}01\text{ ms}$ của b�
         \centering
         \includegraphics[width=\textwidth]{images/gui_not_provable_stamp.png}
         \caption{%
-            Hiệu ứng đóng dấu từ chối trực tiếp lên mặt thẻ $\text{B2}$ khi phán
-            quyết chưa đủ cơ sở chứng minh}
+            Hiệu ứng đóng dấu từ chối trực tiếp lên mặt thẻ $\text{B2}$ khi kết
+            luận chưa đủ cơ sở chứng minh}
         \label{fig:gui_stamp}
     \end{subfigure}
     \hfill
@@ -153,7 +152,7 @@ và thời gian thực thi đến độ phân giải $0{,}01\text{ ms}$ của b�
         \centering
         \includegraphics[width=\textwidth]{images/gui_case_closed.png}
         \caption{%
-            Hồ sơ khép lại vụ án hiển thị đầy đủ các thông số thực thi chi tiết
+            Bảng tổng kết màn chơi hiển thị đầy đủ các thông số thực thi chi tiết
             của bộ giải mệnh đề}
         \label{fig:gui_closed}
     \end{subfigure}

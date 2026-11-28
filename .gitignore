@@ -73,4 +73,20 @@ docs/griductive_cc0_starter_models.zip
 # Full-length 1080p submission demo videos (uploaded to Google Drive per spec §4.7)
 docs/demo/griductive_demo_*.mp4
 
+# LaTeX auxiliary build artifacts (keep compiled .pdf tracked)
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+
+
 
